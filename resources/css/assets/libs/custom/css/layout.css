@@ -1,0 +1,131 @@
+
+/* layout for theme (common styles) */
+
+.bg-theme {
+    background-image: linear-gradient(to right, #077fc0 10%, #013652 );
+}
+
+.bg-orange {
+    background-image: linear-gradient(to right, #f37b57 10%, #f24b18 );
+}
+
+.bg-ltheme {
+    background-color: #c5ebff;
+}
+
+.text-theme {
+    color: #014366;
+}
+
+.text-orange {
+    color: #dc603a;
+}
+
+.text-ltheme {
+    color: #c5ebff;
+}
+
+body {
+    font-weight: 400;
+}
+
+.carousel-item-css {
+    position: relative;
+    align-items: center;
+}
+
+.carousel-caption-css {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: #96d9fc85;
+}
+
+.btn-theme {
+    background-image: linear-gradient(to right, #077fc0 10%, #013652 );
+    color: white;
+}
+
+.btn-theme:hover {
+    background-image: linear-gradient(to right, #f37b57 10%, #f24b18 );
+    color: white;
+}
+
+.btn-orange {
+    background-image: linear-gradient(to right, #f37b57 10%, #f24b18 );
+    color: white;
+}
+
+.btn-orange:hover {
+    background-image: linear-gradient(to right, #077fc0 10%, #013652 );
+    color: white;
+}
+
+.w-css {
+    width:100%;
+    height: 220px;
+}
+
+.h0 {
+    font-size: 75px;
+    font-weight: 700
+}
+
+.card {
+    transition: transform .5s;
+}
+
+.card:hover {
+    transform: scale(1.070);
+}
+
+.bg-image {
+    background-image: url('assets/images/acne-revision.png');
+    background-size: cover;
+}
+
+.bg-auth {
+    background-image: url('assets/images/log-in.jpg');
+    height: 100vh;
+    background-size: cover;
+}
+
+.img-hcss {
+    height: 220px;
+}
+
+
+
+/* animations for content */
+
+.fadeIn {
+    animation: FadeIn 2.5s;
+}
+
+@keyframes FadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.fadeInn {
+    animation: FadeInn 3.2s;
+}
+
+@keyframes FadeInn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.custom-image{
+    height: 600px !important;
+}

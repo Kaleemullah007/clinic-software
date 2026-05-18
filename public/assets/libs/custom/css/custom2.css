@@ -1,0 +1,210 @@
+/* 
+    @media (min-width: 576px) { 
+        .mquery {
+            margin-top: 200px;
+        }
+    }
+
+    @media (max-width: 576px) { 
+        .mquery {
+            margin-top: 200px;
+        }
+    } */
+    
+    .footer {
+        background-color: rgb(236, 236, 236) !important ;
+    }
+
+    .border-none {
+
+    border: none; 
+   }
+   
+   .border-none:focus {
+   
+       outline: none;  
+   }
+
+   .focus-none:focus {
+   
+    outline: none !important  ; 
+    border-color: rgba(0,0,0,0.25);
+    outline: 0;
+    box-shadow: none;
+    }
+
+    .select2 {
+        width: 90% !important;
+
+    }
+   
+   .select2-selection--single{
+    height: 35px  !important;
+    font-size: 14px;
+    border :1px solid rgb(107, 107, 107)  !important;
+    }  
+
+    .over-1 {
+        width: 400px;
+        max-height: 50px ;
+        overflow: auto ;
+        overflow-x: hidden ;
+    }
+    .custom-table-responsive {
+        max-height: 40vh!important;
+        height: 40vh!important;
+        border-bottom: none!important;
+        /* overflow-x: hidden; */
+    }
+
+    .bg-css-1 {
+   
+        background-color: rgb(58, 189, 212); 
+    }
+
+    .body {
+        color: rgb(23, 23, 23);
+        background-color: rgb(236, 236, 236);
+    }
+
+    .position-css-1 {
+        position: absolute;
+        top: 10px;
+        left: 15px;
+    }
+    
+    .body {
+        color:rgb(22, 22, 22); 
+    }
+
+    .image-css-1 {
+        height: 45px; 
+    }
+
+    .h-custom2 {
+        height: 341px;
+        overflow: hidden;
+    }
+
+    .form-control {
+        border-color: rgb(122, 122, 122);
+    }
+
+    .form-control-css {
+        height: 40px;
+    }
+
+    .form-control:active {
+        outline: none;
+    }
+
+
+    
+    .overflow-css {
+        width: 312px;
+        max-height: 100px ;
+        overflow: auto ;
+        overflow-x: hidden ;
+    }
+
+    .min-height-css {
+        min-height: 90vh;
+    }
+ 
+    .card-img-1 {
+        height: 150px;
+    }
+
+    .bg-grey {
+        background-color: rgb(240, 240, 240);
+    }
+
+    .shadow-css {
+        box-shadow: 2px 5px 5px 3px rgb(226, 226, 226);
+        border-radius: 7px;
+        border-top: 1px solid rgb(226, 226, 226);
+    }
+
+    .image-selector {
+        border: 1px dashed rgb(104, 104, 104);
+        width: 200px;
+        height: 200px;
+        border-radius: 5px;
+    }
+
+    .input-file {
+        display: none;
+    }
+    
+    .custom-file-upload {
+        display: inline-block;
+        cursor: pointer;
+        color: rgb(102, 102, 102);
+    }
+
+    .fs-css {
+        font-size: 50px;
+        color: rgb(102, 102, 102);
+        padding-bottom: 10px;
+    }
+    
+    .fs-css-2 {
+        font-size: 14px;
+    }
+
+    .height-css {
+        height: 450px;
+    }
+
+    .badge-css {
+        font-size: 13px;
+        font-weight: 400;
+    }
+
+    .edit-pr:hover {
+        color: rgb(0, 0, 0);
+    }
+
+    .fs-cus {
+        font-size: 20px;
+    }
+
+    .tabs-button {
+        color: rgb(36, 36, 36);
+        outline: rgb(36, 36, 36);
+        font-size: 16px;
+        font-weight: 600;
+    } 
+
+    .badge-fs {
+        width: 30px;
+        height: 18px;
+    }
+
+    .wh-chart-h {
+        min-height: 400px;
+    }
+
+    .border-css {
+        border: 4px solid #000000;
+    }
+
+    .radio-css:checked {
+        background-color: #000000;
+    }
+
+    .pt-css {
+        padding-top: 2px;
+    }
+
+    .border-2px-css {
+        border: 2px solid rgb(66, 66, 66);
+    }
+
+    .color-css {
+        color: var(--main-color);
+    }
+    
+    .border-1px-css {
+        border: 1px solid rgb(66, 66, 66);
+    }

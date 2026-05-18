@@ -1,0 +1,24 @@
+
+.log-in {
+    background-size: cover;
+    min-height: 92.3vh;
+}
+
+.anchor-css,
+.anchor-css:hover {
+    color: rgb(29, 29, 29) ;
+    text-decoration: none;
+}
+
+.sign-in-css {
+    border-radius: 10px;
+    width: 360px;
+    margin-top: auto;
+    margin-bottom: auto;
+}
+
+.log-in-logo {
+    height: 100px;
+    width: 140px;
+    border-radius: 5px;
+}

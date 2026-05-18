@@ -1,0 +1,448 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Enums\RoleName;
+use App\Models\Appointment;
+use App\Http\Requests\StoreAppointmentRequest;
+use App\Http\Requests\UpdateAppointmentRequest;
+use App\Mail\GenericForm;
+use App\Models\AppointmentService;
+use App\Models\BusinessHour;
+use App\Models\Category;
+use App\Models\Clinic;
+use App\Models\Role;
+use App\Models\Service;
+use App\Models\User;
+use Carbon\CarbonPeriod;
+use DateTime;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
+class AppointmentController extends Controller
+{
+    /**
+     * Display a listing of the resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+
+    public function __construct()
+    {
+        $this->authorizeResource(Appointment::class);
+        $this->middleware(['auth','avoid-back-history']);
+    }
+
+
+    public function index()
+    {
+
+        $appointments = Appointment::latest()->paginate(config('services.per_page',10));
+        $availables = $this->getTimeSlots();
+        $services = Category::get();
+        $patients = User::where('role','patient')->get();
+
+//  dd($appointments);
+
+        if($appointments->lastPage() >= request('page')){
+            return view('admin.appointments.index',compact('appointments','availables','services','patients'));
+        }
+        return to_route('appointments.index',['page'=>$appointments->lastPage(),'services'=>$services,'patients'=>$patients]);
+
+    }
+
+    public function UpdatePatientHistory(Request $request){
+
+
+        $patient_id = $request->patientid;
+        $search = $request->search;
+        $status = $request->status;
+        $date = $request->daterange;
+
+
+
+        $appointments = new Appointment();
+        
+        if(!is_null($patient_id) && $patient_id != 'Select Patient'){
+            $appointments= $appointments->where('user_id',$patient_id);
+        }
+        if(!is_null($search)){
+            $appointments= $appointments->where(function($q) use($search){
+                $q->orWhere('name','like','%'.$search.'%')
+                ->orWhere('phone','like','%'.$search.'%');});
+        }
+
+        if(!is_null($status) && $status != 3 && $status != 'Select Status' ){
+
+            $appointments= $appointments->where('is_paid',$status);
+        }
+
+        if(!is_null($date)){
+            $appointments= $appointments->where('date',$date);
+        }
+
+
+
+
+        $appointments=$appointments->latest()->paginate(config('services.per_page',10));
+       
+        $availables = $this->getTimeSlots();
+        $services = Category::get();
+        $html =  view('admin.appointments.ajax-appointments',compact('appointments','availables','services'))->render();
+        return response()->json(['html'=>$html]);
+
+
+    }
+
+
+    /**
+     * get available timeslots .
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function getTimeSlots($date=null){
+        $availables = array();
+        // $days = CarbonPeriod::create(now(),now()->addDays(6));
+        if($date == null)
+        $date=date('Y-m-d');
+        $d    = new DateTime($date);
+        $currentDay  =   $d->format('l');
+
+        // foreach($days as $day) {
+            // $currentDay = $day->format('l');
+        //    dd($currentDay,$date);
+            $time_slots = BusinessHour::where('day', $currentDay)->where('is_day',1)->first();
+
+            if($time_slots != null)
+            $time_slots = $time_slots->timeSlots;
+            else
+            $time_slots = array();
+          ;
+            $booked_appointments = Appointment::where('date', $date)->pluck('time')->toArray();
+            $availables = array_diff($time_slots, $booked_appointments);
+            // break;
+        // }
+
+        return $availables;
+
+    }
+
+
+
+    public function time_slots(Request $request){
+        $date = $request->date;
+        $availables = $this->getTimeSlots($date);
+        $d    = new DateTime($date);
+        $currentDay  =   $d->format('l');
+
+        $time_slots = BusinessHour::where('day', $currentDay)->where('is_day',1)->first();
+        $html = view('admin.appointments.slots',compact('availables','time_slots'))->render();
+        return response()->json(['slots'=>$html]);
+    }
+
+    public function getcategory(Request $request){
+
+        $term = request('term');
+        if(!empty($term)){
+            $appoinmtents = Appointment::where(function($q) use($term){
+                $q->orWhere('name','like','%'.$term.'%')
+                ->orWhere('phone','like','%'.$term.'%');})
+                ->groupBy('name')
+                ->groupBy('phone')
+                ->get();
+        }else{
+            $appoinmtents = Appointment::get();
+        }
+
+            $appoinmtentsData = array();
+            foreach($appoinmtents as $appointment){
+                $data['id'] = $appointment->id;
+                $data['value'] = $appointment->phone.' '.$appointment->name;
+                $data['name'] = $appointment->name;
+                $data['email'] = $appointment->email;
+                $data['phone'] = $appointment->phone;
+                $data['doctor_id'] = $appointment->doctor_id;
+                $data['clinic_id'] = $appointment->clinic_id;
+                array_push($appoinmtentsData, $data);
+            }
+
+        return response()->json($appoinmtentsData);
+    }
+
+
+    /**
+     * Show the form for creating a new resource.
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function create()
+    {
+
+        $services = Category::get();
+        $clinics  = Clinic::get();
+        $doctors = User::where('role','doctor')->get();
+
+        return view('admin.appointments.create',compact('services','clinics','doctors'));
+    }
+
+    function getInvoiceFields(){
+        $months = config('Invoice');
+        $month = date('m');
+        $year  = date('Y');
+        $series  =  $months[$month].$year;
+        $serial_number=  (Appointment::where('serial',$series)->max('serial_number') ?? 0) + 1;
+        $serial_series = $series.'-'.$serial_number;
+        return [$series,$serial_number,$serial_series];
+
+       }
+
+    /**
+     * Store a newly created resource in storage.
+     *
+     * @param  \App\Http\Requests\StoreAppointmentRequest  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function store(StoreAppointmentRequest $request)
+    {
+        $data  = $request->validated();
+
+
+        $discount = $request->discount??0;
+        $paid_amount = $request->paid_amount??0;
+
+        $service_id = array_filter($request->service_id);
+        $serviceIds = collect($service_id)->pluck('service_id');
+
+        $DBCategories = Category::find($serviceIds)
+        ->keyBy('id');
+        $subtotal = collect($request->service_id)->reduce(function($carry,$item){
+            return $carry + $item['price'];
+        },0);
+        $service_total = $subtotal - $discount;
+
+        $actual_service_price = 0;
+        $appointment_services = array();
+        foreach ($service_id as $index => $services_array) {
+            if(!isset($DBCategories[$services_array['service_id']]))
+            continue;
+            $temp = array();
+            $temp['name'] = $DBCategories[$services_array['service_id']]->name;
+            $temp['service_id']   = $DBCategories[$services_array['service_id']]->id;
+            $temp['appointment_id']   = 0;
+
+            $actual_service_price += $DBCategories[$services_array['service_id']]->price;
+            $temp['price']   = $DBCategories[$services_array['service_id']]->price;
+            $temp['discounted_price']   = $services_array['price'];
+            $temp['discount']   = $temp['price']- $temp['discounted_price'];
+            $temp['created_at'] = now();
+            $temp['updated_at'] = now();
+            $appointment_services[] = $temp;
+        }
+
+        $cost_total = $actual_service_price - $discount;
+        list($series,$serial_number,$serial_series) = $this->getInvoiceFields();
+
+        // dd($serviceIds,$subtotal,$appointment_services,$series,$serial_number,$serial_series);
+        $data['serial'] = $series;
+        $data['serial_series'] = $serial_series;
+        $data['serial_number'] = $serial_number;
+
+
+
+        $data['price'] = $actual_service_price;
+        $data['discounted_price'] = $subtotal;
+
+        $data['subtotal_price'] = $actual_service_price;
+        $data['subtotal_discounted_price'] = $subtotal;
+
+        $data['subtotal_price_after_discount'] = $actual_service_price-$discount;
+        $data['subtotal_discounted_price_after_discount'] = $subtotal-$discount;
+
+        $data['paid_amount'] = $paid_amount;
+        $data['remaining_amount'] = $subtotal-$discount-$paid_amount;
+
+
+        unset($data['service_id']);
+        $user = [
+            'name' => $data['name'],
+            'role' => 'patient',
+            'email'=>$data['email'],
+            'phone'=>$data['phone'],
+            'email_verified_at' => now(),
+            'password' => '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // password
+            'remember_token' => Str::random(10),
+        ];
+
+
+       $checkUser = User::where(function($q) use($data){
+            $q->orWhere('email',$data['email'])
+            ->orWhere('phone',$data['phone']);})
+            ->whereNotNull('email')
+            ->first();
+
+            if(is_null($checkUser)){
+                $user = User::updateOrcreate(['phone'=>$data['phone']],$user);
+                $userObject = $user;
+                $user->roles()->sync(Role::where('name', RoleName::PATIENT->value)->first());
+                $user  = $userObject;
+            }
+            else{
+                if(!empty($checkUser->email)){
+                    unset($user['email']);
+                }
+                if(!empty($checkUser->phone)){
+                    unset($user['phone']);
+                }
+                // dd($checkUser->id);
+
+                 User::where('id',$checkUser->id)->update($user);
+                 $user = $checkUser;
+            }
+
+
+        $data['user_id'] = $user->id;
+        $data['is_paid'] = (strtolower($data['is_paid'])=='on'  || $data['is_paid']==1 )?true:false;
+        $data['appointment_status'] = $data['appointment_status']??'';
+        $appointment = Appointment::create($data);
+
+        // dd($appointment);
+        $appointment_services= array_map(function($item) use($appointment) {
+            $item['appointment_id'] =  $appointment->id;
+            return $item;
+       },$appointment_services);
+
+       AppointmentService::insert($appointment_services);
+        $request->session()->flash('message','Appointment Created Sucessfully');
+        return to_route('appointments.create');
+
+
+
+    }
+
+    /**
+     * Display the specified resource.
+     *
+     * @param  \App\Models\Appointment  $appointment
+     * @return \Illuminate\Http\Response
+     */
+    public function show(Appointment $appointment)
+    {
+        //
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param  \App\Models\Appointment  $appointment
+     * @return \Illuminate\Http\Response
+     */
+    public function edit(Appointment $appointment)
+    {
+        $services = Service::get();
+        $clinics  = Clinic::get();
+        $doctors = User::get();
+        return view('admin.appointments.edit',compact('services','clinics','doctors'));
+
+    }
+
+    /**
+     * Update the specified resource in storage.
+     *
+     * @param  \App\Http\Requests\UpdateAppointmentRequest  $request
+     * @param  \App\Models\Appointment  $appointment
+     * @return \Illuminate\Http\Response
+     */
+    public function update(UpdateAppointmentRequest $request, Appointment $appointment)
+    {
+        //
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  \App\Models\Appointment  $appointment
+     * @return \Illuminate\Http\Response
+     */
+    public function destroy(Appointment $appointment)
+    {
+        //
+    }
+
+
+    public function recordsQuery($request)
+    {
+        // withoutGlobalScopes()->
+        $expenses = Appointment::query();
+        $search = $request->search;
+        $dates = $request->daterange;
+
+        if($dates != null){
+            list($start_date,$end_date) = explode('-',$dates);
+           $start_date = changeDateFormat($start_date,'Y-m-d');
+           $end_date = changeDateFormat($end_date,'Y-m-d');
+            $expenses =$expenses->whereDate('date','>=',$start_date)
+            ->whereDate('date','<=',$end_date);
+        }
+        if($search != null)
+            $expenses = $expenses->where('name','like',"%".$search."%");
+        return $expenses ;
+    }
+
+    public function getExpenses(Request $request)
+    {
+        $expenses = $this->recordsQuery($request)->get();
+        $expenses_html = view('admin.appointments.ajax-appointments',compact('expenses'))->render();
+        $pagination_html = view('pages.pagination',compact('expenses'))->render();
+        return response()->json(['html'=>$expenses_html,'phtml'=>$pagination_html]);
+    }
+
+
+            /**
+     * Add the specified row from .
+     *
+     * @param  \App\Models\Setting  $setting
+     * @return \Illuminate\Http\Response
+     */
+    public function addNewRow(Request $request)
+    {
+        $new_row = $request->new_row;
+        $totalrecords = $request->totalrecords;
+        $services  = $request->services;
+        $add_services  = $request->services;
+        $services = Category::whereNotIn('id',array_values($services))->get();
+        $html = view('admin.appointments.row',compact('new_row','totalrecords','services','add_services'))->render();
+        return $html;
+
+    }
+
+
+           /**
+     * Update Services.
+     *
+     * @param  \App\Models\Setting  $setting
+     * @return \Illuminate\Http\Response
+     */
+    public function UpdateService(Request $request)
+    {
+        $new_row = $request->new_row;
+        $totalrecords = $request->totalrecords;
+        $services  = $request->services;
+        $add_services  = $request->services;
+        $services = Category::whereNotIn('id',array_values($services))->get();
+        $html = view('admin.appointments.services_dropdown',compact('new_row','totalrecords','services','add_services'))->render();
+        return $html;
+
+    }
+
+
+
+    public function generatePDF($id){
+        // $appointments = Appointment::with(['Service','Customer'])
+        // ->whereId($id)->first();
+
+        // $pdf = Pdf::loadView('pages.print', compact('appointments'));
+        // return $pdf->download('invoice.pdf');
+    }
+
+}

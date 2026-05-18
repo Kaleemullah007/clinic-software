@@ -1,0 +1,29 @@
+{
+    "Dashboard":"Tablero",
+    "Logout":"Cerrar sesión",
+    "You are logged in!":"¡Estás conectado!",
+    "Please confirm your password before continuing.":"Por favor, confirme su contraseña antes de continuar.",
+    "Password":"Clave",
+    "Confirm Password":"Confirmar contraseña",
+    "Forgot Your Password?":"¿Olvidaste tu contraseña?",
+    "Reset Password":"Restablecer la contraseña",
+    "Send Password Reset Link":"Iniciar sesión",
+    "Sign-In":"Iniciar sesión",
+    "Email Address":"Dirección de correo electrónico",
+    "Remember Me":"Recuérdame",
+    "Sign In":"Registrarse",
+    "Register Now":"Regístrate ahora",
+    "Already have an account?":"¿Ya tienes una cuenta?",
+    "A fresh verification link has been sent to your email address.":"Se ha enviado un nuevo enlace de verificación a su dirección de correo electrónico.",
+    "Before proceeding, please check your email for a verification link.":"Antes de continuar, verifique su correo electrónico para obtener un enlace de verificación.",
+    "If you did not receive the email":"Si no recibiste el correo electrónico",
+    "click here to request another":"haga clic aquí para solicitar otro",
+    "Toggle navigation":"Navegación de palanca",
+    "Login":"Acceso",
+    "Sign Up":"Inscribirse",
+    "Register":"Registro",
+    "Username":"Nombre de usuario",
+    "Re-Enter Password":"Escriba la contraseña otra vez"
+
+}
+

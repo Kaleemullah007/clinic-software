@@ -1,0 +1,241 @@
+
+/* layout for theme (common styles) */
+
+.bg-theme {
+    background-image:  linear-gradient(to right,#00d6ab 5%, #19e198);
+}
+
+.bg-orange {
+    background-color:  #072e75;
+}
+
+.bg-ltheme {
+    background-color: #c8ffe4;
+}
+
+.text-theme {
+    color: #012e2e;
+}
+
+.text-orange {
+    color: #072e75;
+}
+
+.text-ltheme {
+    color: #c8ffe4;
+}
+
+
+.btn-theme {
+    background-image:  linear-gradient(to right,#00d6ab 5%, #19e198);
+    color: white;
+}
+
+.btn-theme:hover {
+    background:  #072e75;
+    color: white;
+}
+
+.btn-orange {
+    /* background-image: linear-gradient(to right, #072e75 15%, #0c42a7 ); */
+    background-color:  #072e75;
+    color: white !important;
+}
+
+.btn-orange:hover {
+    background-image:  linear-gradient(to right,#00d6ab 5%, #19e198);
+    color: white;
+}
+
+body {
+    font-weight: 400;
+}
+
+
+
+
+.carousel-item-css {
+    position: relative;
+    align-items: center;
+}
+
+.carousel-caption-css {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background-color: #dbf8ff74;
+}
+
+.w-css {
+    width:100%;
+    height: 220px;
+}
+
+.h0 {
+    font-size: 55px;
+    font-weight: 700
+}
+
+.card {
+    transition: transform .5s;
+}
+
+.card:hover {
+    transform: scale(1.070);
+}
+
+.bg-image {
+    background-image: url('assets/images/acne-revision.png');
+    background-size: cover;
+}
+
+.bg-auth {
+    background-image: url('assets/images/log-in.jpg');
+    height: 100vh;
+    background-size: cover;
+}
+
+.img-hcss {
+    height: 250px;
+}
+
+.strike {
+    text-decoration: line-through;
+    text-decoration-color: rgb(149, 0, 0);
+    text-decoration-thickness: 3px;
+}
+
+
+
+.border-css {
+    border: 1px solid #00d6ab;
+}
+
+.navbar-nav li:hover > ul.dropdown-menu {
+    display: block;
+}
+
+.dropdown-submenu {
+    position:relative;
+}
+
+.dropdown-menu .dropdown-submenu .dropdown-menu {
+    /* top: -7; */
+    left: 100%;
+    /* margin-top: 7px; */
+    top: 0px;
+    border-radius: 0px;
+}
+
+#dropdown-css .dropdown-menu {
+    background-image:  linear-gradient(to right,#00d6ab 5%, #19e198);
+    border: none;
+    margin-top: 0px;
+}
+
+#dropdown-css .dropdown-item {
+    color: white;
+
+}
+
+#dropdown-css  ul li .dropdown-item:hover {
+    background-color:  #072e75;
+    
+}
+
+
+
+/* media queries below */
+
+@media screen and (min-width:992px) {
+    
+}
+
+
+
+/* animations for content */
+
+.fadeIn {
+    animation: FadeIn 2.1s;
+}
+
+@keyframes FadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.fadeInn {
+    animation: FadeInn 2.6s;
+}
+
+@keyframes FadeInn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+.custom-image{
+    height: 620px !important;
+}
+
+.logo-css {
+    height: 50px;
+}
+
+
+/* 9-11-2022 */
+
+.rainbow {
+    position: relative;
+    height: 250px;
+    width: 180px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+.rainbow::before {
+    content: '';
+    position: absolute;
+    height: 130%;
+    width: 200%;
+    background: conic-gradient(
+        #f30505,
+        #f36309,
+        #f4f40b,
+        #04f340,
+        #0c6cfc,
+        #6a11fa,
+        #b914ff
+    );
+    animation: animate 3s linear infinite;
+}
+
+@keyframes animate {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.image-border {
+    z-index: 9999;
+    padding: 5px;
+}
+
+.btn-css {
+    border: 3px solid white;
+    color: white;
+    border-radius: 20%;
+}

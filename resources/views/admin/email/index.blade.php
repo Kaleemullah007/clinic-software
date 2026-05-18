@@ -1,0 +1,37 @@
+@extends('layouts.admin')
+
+@section('content')
+
+<!-- main-content start -->
+<div class="container-fluid">
+        <div class="container">
+            <div class="row pt-3">
+                <div class="col-12">
+                    <h4>Email Templates</h4>
+                </div>
+                <hr>
+            </div>
+            <div class="row mb-4">
+                <div class="col-lg-3 col-md-6 col-12 mt-2 d-flex ">
+                    <label for="search" class="form-label mt-1"><i class="bi bi-search "></i></label>
+                    <input type="text" class="form-control bg-grey form-control-css border-secondary ms-3 rounded"
+                        placeholder="Search this table..." id="search">
+                </div>
+                <div class="col-lg-9 col-md-6 col-12 mt-2 text-end">
+                    <a href="{{ route('email.create') }}" class="btn btn-sm me-2 btn-success">
+                        <i class="bi bi-plus-circle me-2"></i>Create</a>
+                </div>
+            </div>
+            @include('flash-message')
+            <div class="table-responsive">
+                @include('admin.email.ajax-email')
+
+            </div>
+        </div>
+        {{-- @include('admin.email.edit') --}}
+        {{-- @include('admin.email.create') --}}
+
+
+</div>
+
+@endsection

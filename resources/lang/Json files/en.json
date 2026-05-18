@@ -1,0 +1,403 @@
+{
+    "Dashboard":"Dashboard",
+    "Logout":"Logout",
+    "Home":"Home",
+    "You are logged in!":"You are logged in!",
+    "Please confirm your password before continuing.":"Hello Guest, This is readerstacks. how are you today",
+    "Password":"Password",
+    "Confirm Password":"Confirm Password",
+    "Forgot Your Password?":"Forgot Your Password?",
+    "Reset Password":"Reset Password?",
+    "Send Password Reset Link":"Send Password Reset Link",
+    "Sign-In":"Sign-In",
+    "Email Address":"Email Address",
+    "Remember Me":"Remember Me",
+    "Sign In":"Sign In",
+    "Register Now":"Register Now",
+    "Already have an account?":"Already have an account?",
+    "A fresh verification link has been sent to your email address.":"A fresh verification link has been sent to your email address.",
+    "Before proceeding, please check your email for a verification link.":"Before proceeding, please check your email for a verification link.",
+    "If you did not receive the email":"If you did not receive the email",
+    "click here to request another":"click here to request another",
+    "Toggle navigation":"Toggle navigation",
+    "Login":"Login",
+    "Sign Up":"Sign Up",
+    "Register":"Register",
+    "Username":"Username",
+    "Re-Enter Password":"Re-Enter Password",
+
+    // Plan
+    "Plans":"Plans",
+    "Description":"Description",
+    "Validity":"Validity",
+    "Plan Code":"Plan Code",
+    "Plan Name":"Plan Name",
+    "One Month":"One Month",
+    "One Year":"One Year",
+    "Unlimited":"Unlimited",
+    "Create Plan":"Create Plan",
+    "Plan name":"Plan name",
+    "Plan description...":"Plan description...",
+    "6 Months...":"6 Months...",
+
+    // Setting, Groups, Permission and Profile
+
+     "Roles":"Roles",
+    "Create Role":"Create Role",
+    "Role name...":"Role name...",
+    "Role description...":"Role description...",
+    "Create Expense":"Create Expense",
+    "Expense-catagory":"Expense-catagory",
+    "Amount":"Amount",
+    "Details":"Details",
+    "Expenses":"Expenses",
+
+    "Group Management":"Group Management",
+    "User Profile Settings":"User Profile Settings",
+    "Email address":"Email address",
+    "System Settings":"System Settings",
+    "Default Currency":"Default Currency",
+    "Default Email":"Default Email",
+    "Change Logo":"Change Logo",
+    "Company Name":"Company Name",
+    "Company Phone":"Company Phone",
+
+
+   "Create Permissions":"Create Permissions",
+    "Enter role name":"Enter role name",
+    "Role Description":"Role Description",
+    "Enter role description":"Enter role description",
+    "View":"View",
+    "Edit":"Edit",
+    "Delete":"Delete",
+    "View all Records":"View all Records",
+    "User Permissions":"User Permissions",
+    "date_format":"Date Format",
+
+    // topbar
+
+    "Server Rebooted":"Server Rebooted",
+    "Stay Blessed":"Stay Blessed",
+    "Love your work":"Love your work",
+    "Update required":"Update required",
+    "Super Admin":"Super Admin",
+    "Co-Admin":"Co-Admin",
+    "Writer":"Writer",
+    "Profile":"Profile",
+    "Permissions":"Permissions",
+    "Admins":"Admins",
+    "Design Type":"Design Type",
+    "Color":"Color",
+
+    // Sidebar
+
+    "Administration":"Administration",
+
+    // Dashboard
+
+    "Multi Schools":"Multi Schools",
+    "Schools":"Schools",
+    "School Data":"School Data",
+    "Class Groups":"Class Groups",
+    "Classes":"Classes",
+    "Sections":"Sections",
+    "Students":"Students",
+    "Active":"Active",
+    "Teachers":"Teachers",
+    "Subjects":"Subjects",
+    "Notices":"Notices",
+    "S/N":"S/N",
+    "Title":"Title",
+    "From":"From",
+    "Till":"Till",
+    "Actions":"Actions",
+    "Academic Years":"Academic Years",
+    "Set Current Academic-Year":"Set Current Academic-Year",
+    "Set Academic Year":"Set Academic Year",
+
+    // Schools
+    
+    "Search this table":"Search this table",
+    "Filter":"Filter",
+    "PDF":"PDF",
+    "EXCEL":"EXCEL",
+    "Create":"Create",
+    "Name":"Name",
+    "Initials":"Initials",
+    "Code":"Code",
+    "Address":"Address",
+    "Action":"Action",
+    "Rows Per Page":"Rows Per Page",
+    "All":"All",
+    "Filters":"Filters",
+    "Search by Code":"Search by Code",
+    "Search by Name":"Search by Name",
+    "Reset":"Reset",
+    "Create School":"Create School",
+    "Submit":"Submit",
+    "Cancel":"Cancel",
+    "School Initials":"School Initials",
+    "Edit School":"Edit School",
+    "View School":"View School",
+
+    // School Settings
+
+    "School Settings":"School Settings",
+    "Phone Number":"Phone Number",
+    "Save Changes":"Save Changes",
+    "Email":"Email",
+
+    // Classes
+
+    "Create Class Group":"Create Class Group",
+    "Class Group Name":"Class Group Name",
+    "Group":"Group",
+    "Create Class":"Create Class",
+    "Class Group":"Class Group",
+    "Choose":"Choose",
+    "Edit Class Group":"Edit Class Group",
+    "View Class Group":"View Class Group",
+    "Edit Class":"Edit Class",
+    "View Class":"View Class",
+
+    // sections
+
+    "Create Section":"Create Section",
+    "Section Name":"Section Name",
+    "Choose Class":"Choose Class",
+    "Section list":"Section list",
+    "Sections under Class":"Sections under Class",
+    "Edit Section":"Edit Section",
+    "View Section":"View Section",
+
+    // students
+
+    "Create Students":"Create Students",
+    "Students List":"Students List",
+    "Promotions":"Promotions",
+    "Graduations":"Graduations",
+    "Date Created":"Date Created",
+    "Date Updated":"Date Updated",
+    "Photo":"Photo",
+    "Class":"Class",
+    "Section":"Section",
+    "Gender":"Gender",
+    "Create Student":"Create Student",
+    "Account Information":"Account Information",
+    "First Name":"First Name",
+    "Last Name":"Last Name",
+    "Other Names":"Other Names",
+    "Personal Information":"Personal Information",
+    "Date of Birth":"Date of Birth",
+    "Male":"Male",
+    "Female":"Female",
+    "Other":"Other",
+    "Blood Group":"Blood Group",
+    "Phone":"Phone",
+    "Country":"Country",
+    "State":"State",
+    "City":"City",
+    "Profile Photo":"Profile Photo",
+    "Islam":"Islam",
+    "Christianity":"Christianity",
+    "Hinduism":"Hinduism",
+    "Buddhism":"Buddhism",
+    "Religion":"Religion",
+    "Choose a Class":"Choose a Class",
+    "Choose a Section":"Choose a Section",
+    "Class Information":"Class Information",
+    "Addmission Number":"Addmission Number",
+    "Addmission Number ( Optional )":"Addmission Number ( Optional )",
+    "Date of Addmission":"Date of Addmission",
+    "View Student":"View Student",
+    "School":"School",
+    "Academic Information":"Academic Information",
+    "Addmission":"Addmission",
+    "Addmission Date":"Addmission Date",
+    "Graduated":"Graduated",
+    "Edit Student":"Edit Student",
+
+    // Promotions  , Graduations
+    
+    "From Class":"From Class",
+    "From Section":"From Section",
+    "To Class":"To Class",
+    "To Section":"To Section",
+    "Search by No. of Students":"Search by No. of Students",
+    "Create Promotion":"Create Promotion",
+    "Old Class":"Old Class",
+    "Old Section":"Old Section",
+    "New Class":"New Class",
+    "New Section":"New Section",    
+    "Create Graduation":"Create Graduation",
+
+    // Teachers
+
+    "Create Teacher":"Create Teacher",
+    "Teachers List":"Teachers List",
+    "View Teacher":"View Teacher",
+    "Edit Teacher":"Edit Teacher",
+
+    // parent
+
+    "Parents":"Parents",
+    "Create Parent":"Create Parent",
+    "Parents List":"Parents List",
+    "Assign Students":"Assign Students",
+    "View Parent":"View Parent",
+    "Assign students to parent":"Assign students to parent",
+    "Remove Student":"Remove Student",
+    "Add Student":"Add Student",
+
+    // Admins
+    
+    "Create Admins":"Create Admins",
+    "Admins List":"Admins List",
+    "Create Admin":"Create Admin",
+    "Edit Admin":"Edit Admin",
+    "View Admin":"View Admin",
+
+    // Academic Years
+
+    "Duration":"Duration",
+    "Search by Duration":"Search by Duration",
+    "Create Academic Year":"Create Academic Year",
+    "Start Year":"Start Year",
+    "End Year":"End Year",
+    "View Academic Year":"View Academic Year",
+    "Edit Academic Year":"Edit Academic Year",
+    // Semester
+
+    "Semester":"Semester",
+    "Semesters":"Semesters",
+    "Semesters List":"Semesters List",
+    "Set Semester for current Academic Year":"Set Semester for current Academic Year",
+    "Set Semester":"Set Semester",
+    "Create Semester":"Create Semester",
+    "Semester Name":"Semester Name",
+    "Create Semester for current Academic Year":"Create Semester for current Academic Year",
+    "View Semester":"View Semester",
+    "Edit Semester":"Edit Semester",
+    // Subjects
+    
+    "Subject":"Subject",
+    "Subjects under Class":"Subjects under Class",
+    "Subjects list":"Subjects list",
+    "Short Name":"Short Name",
+    "Teachers Assigned":"Teachers Assigned",
+    "Add Subject to Class":"Add Subject to Class",
+    "Add Teachers to Subject":"Add Teachers to Subject",
+    "Create Subject":"Create Subject",
+    "View Subject":"View Subject",
+    "Edit Subject":"Edit Subject",
+
+    // Notices
+    
+    "Academics":"Academics",
+    "Search by Title":"Search by Title",
+    "Create Notice":"Create Notice",
+    "Start Date":"Start Date",
+    "Stop Date":"Stop Date",
+    "Upload File":"Upload File",
+    "View Notice":"View Notice",
+
+    // Syllabus
+
+    "Syllabus":"Syllabus",
+    "Syllabus list":"Syllabus list",
+    "Select a class to see syllabus":"Select a class to see syllabus",
+    "Download":"Download",
+    "Search by Class":"Search by Class",
+    "Search by Subject":"Search by Subject",
+    "Create Syllabus":"Create Syllabus",
+
+    // Timetables
+
+    "Timetables":"Timetables",
+    "Select a class to see Timetable":"Select a class to see Timetable",
+    "Timetable":"Timetable",
+    "Manage":"Manage",
+    "Create Timetable":"Create Timetable",
+    "View Timetable":"View Timetable",
+    "Print Timetable":"Print Timetable",
+    "Monday":"Monday",
+    "Tuesday":"Tuesday",
+    "Wednesday":"Wednesday",
+    "Thursday":"Thursday",
+    "Friday":"Friday",
+    "Saturday":"Saturday",
+    "Sunday":"Sunday",
+    "Edit Timetable":"Edit Timetable",
+    "Manage Timetable":"Manage Timetable",
+
+    // Exams
+
+    "Exams":"Exams",
+    "Published":"Published",
+    "Not Published":"Not Published",
+    "Inactive":"Inactive",
+    "Status":"Status",
+    "Result Status":"Result Status",
+    "Manage Exam Slot":"Manage Exam Slot",
+    "Create Exam Slot":"Create Exam Slot",
+    "Create Exam":"Create Exam",
+    "Manage Exam Record":"Manage Exam Record",
+    "Exam Records":"Exam Records",
+    "Exam Record":"Exam Record",
+    "Manage exam record":"Manage exam record",
+    "Exam":"Exam",
+    "View Records":"View Records",
+    "Result Checker":"Result Checker",
+    "Result Tabulation":"Result Tabulation",
+    "Exam Tabulation":"Exam Tabulation",
+    "Exam Tablulation":"Exam Tablulation",
+    "Result Tablulation":"Result Tablulation",
+    "Semester Result Tablulation":"Semester Result Tablulation",
+    "Academic Year":"Academic Year",
+    "Student":"Student",
+    "Edit Exam":"Edit Exam",
+    "Maximum Marks Obtainable":"Maximum Marks Obtainable",
+    "Exam Slots":"Exam Slots",
+    "Maximum Marks":"Maximum Marks",
+    "Edit Exam Slot":"Edit Exam Slot",
+    "View Result":"View Result",
+
+    // Grade System
+
+    "Grade System":"Grade System",
+    "Select a class group to see grading system":"Select a class group to see grading system",
+    "Grading system for Class Group":"Grading system for Class Group",
+    "Remarks":"Remarks",
+    "Grade From":"Grade From",
+    "Grade Till":"Grade Till",
+    "Create Grade":"Create Grade",
+    "Remark":"Remark",
+    "Start Time":"Start Time",
+    "Stop Time":"Stop Time",
+    "Edit Grade":"Edit Grade",
+
+    // i will replace : with =>  in all etries and cut and paste all the data in resources/lang/en/en.php 
+
+
+
+
+    "Search":"Search",
+    "Search":"Search",
+    "Search":"Search",
+    "Search":"Search",
+    "Search":"Search",
+    "Search":"Search",
+    "Search":"Search",
+    "Search":"Search",
+    "Search":"Search",
+    "Search":"Search",
+    "Search":"Search",
+    "Search":"Search",
+    "Search":"Search",
+    "Search":"Search"
+
+
+
+
+}
+

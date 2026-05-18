@@ -1,0 +1,28 @@
+{
+    "Dashboard":"Приборная доска",
+    "Logout":"Выйти",
+    "You are logged in!":"Вы вошли в систему!",
+    "Please confirm your password before continuing.":"Пожалуйста, подтвердите свой пароль, прежде чем продолжить.",
+    "Password":"Пароль",
+    "Confirm Password":"Подтвердить Пароль",
+    "Forgot Your Password?":"Забыли свой пароль?",
+    "Reset Password":"Сброс пароля",
+    "Send Password Reset Link":"Отправить ссылку для сброса пароля",
+    "Sign-In":"Войти",
+    "Email Address":"Адрес электронной почты",
+    "Remember Me":"Запомните меня",
+    "Sign In":"Войти",
+    "Register Now":"Зарегистрируйтесь сейчас",
+    "Already have an account?":"¿Ya tienes una cuenta?",
+    "A fresh verification link has been sent to your email address.":"На ваш адрес электронной почты отправлена ​​новая ссылка для подтверждения.",
+    "Before proceeding, please check your email for a verification link.":"Прежде чем продолжить, проверьте свою электронную почту на наличие ссылки для подтверждения.",
+    "If you did not receive the email":"Если вы не получили письмо",
+    "click here to request another":"нажмите здесь, чтобы запросить другой",
+    "Toggle navigation":"Переключить навигацию",
+    "Login":"Авторизоваться",
+    "Sign Up":"Зарегистрироваться",
+    "Register":"регистр",
+    "Username":"Имя пользователя",
+    "Re-Enter Password":"Повторно введите пароль"
+
+}

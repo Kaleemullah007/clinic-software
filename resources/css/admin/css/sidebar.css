@@ -1,0 +1,80 @@
+
+/* start sidebar css */
+
+.left-menu {
+    height: 97vh;
+    width: 240px;
+    position: fixed;
+    box-shadow: 3px -1px 10px 1px #efeeee;
+    overflow-y: scroll;
+    transition: .5s;
+    margin-top: 0px;
+    padding-bottom: 40px;
+}
+
+nav.animated {
+    position: relative;
+    width: 240px;
+}  
+
+.left-menu::-webkit-scrollbar {
+    width: 6px;
+}
+
+.left-menu::-webkit-scrollbar-thumb {
+border-radius: 5px;
+background: linear-gradient(180deg, rgb(218, 40, 111) 25%, rgba(218, 40, 111,1) 96%);        
+}
+
+ul#sidebar li {
+    transition: .3s;
+    border-left: 5px solid #fff;
+}
+
+ul#sidebar li a {
+    display: block;
+    transition: .2s;
+    padding: 13px 15px;
+    font-size: 15px;
+    font-weight: 600;  
+    text-decoration: none;
+    color: #636262;
+}
+
+ul#sidebar li a:hover {
+    color: #B1083C;
+    background: #f4f7f7;
+    width: 100% !important;
+
+}
+
+ul#sidebar li:hover {
+    border-left: 5px solid #B1083C;
+}
+
+li.active {
+    border-left: 5px solid #B1083C !important;
+}
+
+li.active a {
+    color: #B1083C !important;
+    background: #f4f7f7;    
+}
+
+ul#sidebar li a i {
+    padding-right: 7px;
+    font-size: 16px;
+}
+
+ul#sidebar li a span {
+    font-size: 18px;
+}
+    
+.overflow-css {
+    /* width: 312px; */
+    max-height: 150px ;
+    overflow: auto ;
+    overflow-x: hidden ;
+}
+
+/* end Sidebar Css */

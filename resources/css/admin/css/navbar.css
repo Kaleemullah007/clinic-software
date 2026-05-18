@@ -1,0 +1,104 @@
+
+/* Start Navbar css */
+
+
+.left-menu.hide{
+    width: 0;
+}
+
+.logo {
+    width: 240px; 
+    background: linear-gradient(90deg, rgba(177,8,60,1) 25%, rgba(233,102,220,1) 96%);        
+}
+
+li.dropdown {
+    position: relative;
+}
+        
+.logo-image {
+    width: 35px;
+}
+
+p.count {
+    position: absolute;
+    top: 0;
+    font-size: 10px;
+    height: 15px;
+    width: 16px;
+    right: -7px;
+}
+    
+.dropdown-menu-css {
+    right: 0px !important;
+    left: auto !important;
+    min-width: 16rem;
+}
+
+img.user-note {
+    width: 35px;
+    height: 35px;
+}
+
+.dp-main-menu a {
+    border-bottom: 1px solid #ddd;
+}
+
+.dp-main-menu a:last-child {
+    border-bottom: 0 ;
+}
+
+img.sms-user {
+    width: 45px;
+    height: 45px;
+}
+
+/* end Navbar css */
+
+
+/* responsive css for navbar sidebar and dashboard */
+
+@media (max-width: 1200px) {
+    .left-menu {
+        height: 100vh;
+        width: 0;
+        position: absolute;
+        box-shadow: 3px -1px 19px 1px #ddd;
+        overflow-y: scroll;
+        background: white;
+        transition: .5s;
+        -webkit-transition: .5s;
+        -moz-transition: .5s;
+        -ms-transition: .5s;
+        -o-transition: .5s;
+        margin-top: -5px;
+        z-index: 99;
+    }
+    .content-wrapper {
+        margin-left: 0;
+    }
+    .left-menu.hide {
+        transition: .5s;
+        -webkit-transition: .5s;
+        -moz-transition: .5s;
+        -ms-transition: .5s;
+        -o-transition: .5s;
+        width: 200px;
+        position: fixed;
+        z-index: 99;
+    }
+}
+
+@media (max-width: 992px) {
+    .top-chart-earn {
+        margin: 10px 0px;
+    }
+}
+
+@media (max-width: 540px) {
+    .logo {
+        display: none !important;
+        /* visibility: hidden; */
+    }
+}
+
+/* responsive css for navbar sidebar and dashboard */
