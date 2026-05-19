@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use App\Models\Contact;
 use App\Http\Requests\StoreContactRequest;
 use App\Http\Requests\UpdateContactRequest;
+use Illuminate\Http\Request;
+use Illuminate\Support\Str;
+use Yajra\DataTables\Facades\DataTables;
 
 class ContactController extends Controller
 {
@@ -21,14 +24,33 @@ class ContactController extends Controller
      }
 
 
-    public function index()
+    public function index(Request $request)
     {
-        $contacts = Contact::paginate(config('services.per_page',10));
-        if($contacts->lastPage() >= request('page')){
-            return view('admin.contact.index',compact('contacts'));
-        }
-        return to_route('contacts.index',['page'=>$contacts->lastPage()]);
+        if ($request->ajax()) {
+            $query = Contact::latest();
 
+            return DataTables::of($query)
+                ->addIndexColumn()
+                ->addColumn('message_short', function (Contact $c) {
+                    return e(Str::limit($c->message, 50));
+                })
+                ->addColumn('action', function (Contact $c) {
+                    $view = auth()->user()->can('view', $c)
+                        ? '<a href="' . route('contacts.show', $c->id) . '" class="btn btn-sm btn-outline-secondary" title="View"><i class="bi bi-eye"></i></a>'
+                        : '';
+                    $del = auth()->user()->can('delete', $c)
+                        ? '<form action="' . route('contacts.destroy', $c->id) . '" method="POST" class="d-inline" onsubmit="return confirm(\'Delete?\')">
+                            ' . csrf_field() . method_field('DELETE') . '
+                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete"><i class="bi bi-trash"></i></button>
+                           </form>'
+                        : '';
+                    return '<div class="d-flex gap-1">' . $view . $del . '</div>';
+                })
+                ->rawColumns(['action'])
+                ->make(true);
+        }
+
+        return view('admin.contact.index');
     }
 
     /**

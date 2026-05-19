@@ -16,6 +16,26 @@ class SalaryController extends Controller
         if ($request->ajax()) {
             $query = Salary::with(['user:id,name', 'processedBy:id,name'])->latest();
 
+            // Date range filter
+            $range = $request->input('date_range');
+            if ($range === 'this_month') {
+                $query->where('month', now()->month)->where('year', now()->year);
+            } elseif ($range === 'last_month') {
+                $prev = now()->subMonth();
+                $query->where('month', $prev->month)->where('year', $prev->year);
+            } elseif ($range === 'this_week') {
+                $query->whereBetween('created_at', [now()->startOfWeek(), now()->endOfWeek()]);
+            } elseif ($range === 'last_week') {
+                $query->whereBetween('created_at', [now()->subWeek()->startOfWeek(), now()->subWeek()->endOfWeek()]);
+            } elseif ($range === 'custom') {
+                if ($request->filled('date_from')) {
+                    $query->whereRaw("CONCAT(year, '-', LPAD(month, 2, '0'), '-01') >= ?", [$request->input('date_from')]);
+                }
+                if ($request->filled('date_to')) {
+                    $query->whereRaw("CONCAT(year, '-', LPAD(month, 2, '0'), '-01') <= ?", [$request->input('date_to')]);
+                }
+            }
+
             return DataTables::of($query)
                 ->addIndexColumn()
                 ->addColumn('staff_col', fn (Salary $s) =>

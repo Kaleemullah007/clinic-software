@@ -1,46 +1,58 @@
 @extends('layouts.admin')
-
 @section('content')
-
-<!-- main-content start -->
 <div class="container-fluid">
-        <div class="container">
-            <div class="row pt-3">
-                <div class="col-12">
-                    <h4>Blogs</h4>
-                </div>
-                <hr>
-            </div>
-
-            <div class="row mb-4">
-                <div class="col-lg-3 col-md-6 col-12 mt-2 d-flex ">
-                    <label for="search" class="form-label mt-1"><i class="bi bi-search "></i></label>
-                    <input type="text" class="form-control bg-grey form-control-css border-secondary ms-3 rounded"
-                        placeholder="Search this table..." id="search">
-                </div>
-                <div class="col-lg-9 col-md-6 col-12 mt-2 text-end">
-                    <!-- offcanvas trigger for filter -->
-                    {{-- <button type="button" class="btn btn-sm me-2 btn-outline-primary" data-bs-toggle="offcanvas"
-                        data-bs-target="#filters" aria-controls="filters"><i class="bi bi-funnel"></i> Filter</button>
-                    <button type="button" class="btn btn-sm me-2 btn-outline-success"><i class="bi bi-filetype-pdf"></i>
-                        PDF</button>
-                    <button type="button" class="btn btn-sm me-2 btn-outline-danger"><i
-                            class="bi bi-file-earmark-excel-fill"></i> EXCEL</button> --}}
-                    <!-- modal trigger for create plan -->
-                    <a href="{{ route('blogger.create') }}" class="btn btn-sm me-2 btn-success">
-                        <i class="bi bi-plus-circle me-2"></i>Create</a>
-                </div>
-            </div>
-            @include('flash-message')
-            <div class="table-responsive">
-                @include('admin.blogs.ajax-blogs',$blogs)
-
-            </div>
-
-            @include('admin.blogs.comments',$blogs)
-
+    <div class="row pt-3 mx-1">
+        <div class="col-12 d-flex justify-content-between align-items-center">
+            <h4 class="fw-bold">Blogs</h4>
+            @can('create', \App\Models\Blog::class)
+            <a href="{{ route('blogger.create') }}" class="btn btn-sm btn-success"><i class="bi bi-plus-lg me-1"></i> Add Blog</a>
+            @endcan
         </div>
-
+        <hr class="my-2">
+    </div>
+    <div class="row mx-1">
+        <div class="col-12">
+            @include('flash-message')
+            <div class="shadow-css p-3">
+                <table id="blogTable" class="table table-hover w-100">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Title</th>
+                            <th>Status</th>
+                            <th>Created At</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
+        </div>
+    </div>
 </div>
-
+@endsection
+@section('script')
+<style>
+    .shadow-css{background:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.08);}
+    #blogTable thead th{background:#B1083C!important;color:#fff!important;border-color:#9a072f!important;white-space:nowrap;}
+    #blogTable thead .sorting_asc,#blogTable thead .sorting_desc{background:#8e0630!important;}
+</style>
+<script>
+$(function(){
+    $('#blogTable').DataTable({
+        serverSide:true, processing:true,
+        ajax:'{{ route("blogger.index") }}',
+        columns:[
+            {data:'DT_RowIndex',name:'DT_RowIndex',orderable:false,searchable:false,width:'50px'},
+            {data:'title',name:'title'},
+            {data:'status',name:'status',orderable:false,searchable:false,className:'text-center'},
+            {data:'created_at_fmt',name:'created_at_fmt',searchable:false},
+            {data:'action',name:'action',orderable:false,searchable:false,className:'text-center'},
+        ],
+        order:[[1,'asc']],
+        responsive:true,
+        pageLength:15,
+        language:{searchPlaceholder:'Search...',processing:'<div class="spinner-border spinner-border-sm" style="color:#B1083C"></div> Loading…'},
+    });
+});
+</script>
 @endsection

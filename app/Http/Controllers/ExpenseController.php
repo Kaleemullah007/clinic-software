@@ -16,6 +16,26 @@ class ExpenseController extends Controller
         if ($request->ajax()) {
             $query = Expense::with(['clinic:id,name', 'creator:id,name'])->latest('expense_date');
 
+            // Date range filter
+            $range = $request->input('date_range');
+            if ($range === 'this_month') {
+                $query->whereMonth('expense_date', now()->month)->whereYear('expense_date', now()->year);
+            } elseif ($range === 'last_month') {
+                $prev = now()->subMonth();
+                $query->whereMonth('expense_date', $prev->month)->whereYear('expense_date', $prev->year);
+            } elseif ($range === 'this_week') {
+                $query->whereBetween('expense_date', [now()->startOfWeek()->toDateString(), now()->endOfWeek()->toDateString()]);
+            } elseif ($range === 'last_week') {
+                $query->whereBetween('expense_date', [now()->subWeek()->startOfWeek()->toDateString(), now()->subWeek()->endOfWeek()->toDateString()]);
+            } elseif ($range === 'custom') {
+                if ($request->filled('date_from')) {
+                    $query->where('expense_date', '>=', $request->input('date_from'));
+                }
+                if ($request->filled('date_to')) {
+                    $query->where('expense_date', '<=', $request->input('date_to'));
+                }
+            }
+
             return DataTables::of($query)
                 ->addIndexColumn()
                 ->addColumn('amount_col', fn (Expense $e) => 'PKR ' . number_format($e->amount, 2))

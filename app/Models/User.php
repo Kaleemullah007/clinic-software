@@ -42,4 +42,14 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasMany(Appointment::class);
     }
+
+    public function prescriptions(): HasMany
+    {
+        return $this->hasMany(\App\Models\Prescription::class, 'user_id');
+    }
+
+    public function importLogs(): HasMany
+    {
+        return $this->hasMany(\App\Models\ImportLog::class, 'uploaded_by');
+    }
 }

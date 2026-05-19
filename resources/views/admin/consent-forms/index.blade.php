@@ -1,5 +1,4 @@
 @extends('layouts.admin')
-
 @section('content')
 <div class="container-fluid">
     <div class="row pt-3 mx-1">
@@ -15,49 +14,54 @@
         <div class="col-12">
             @include('flash-message')
             <div class="shadow-css p-3">
-                <table id="cfTable" class="table table-hover w-100">
-                    <thead class="table-light">
-                        <tr><th>#</th><th>Title</th><th>Patient</th><th>Appointment</th><th>Signed</th><th>Signed At</th><th>Actions</th></tr>
-                    </thead>
-                    <tbody>
-                        @foreach($forms as $i => $f)
+                <table id="consentFormsTable" class="table table-hover w-100">
+                    <thead>
                         <tr>
-                            <td>{{ $i+1 }}</td>
-                            <td>{{ $f->form_title }}</td>
-                            <td>{{ $f->patient->name ?? '—' }}</td>
-                            <td>{{ $f->appointment->appointment_id ?? $f->appointment_id }}</td>
-                            <td>
-                                <span class="badge {{ $f->signed ? 'bg-success' : 'bg-warning text-dark' }}">
-                                    {{ $f->signed ? 'Signed' : 'Pending' }}
-                                </span>
-                            </td>
-                            <td>{{ $f->signed_at ? $f->signed_at->format('d M Y') : '—' }}</td>
-                            <td class="d-flex gap-1">
-                                @if(!$f->signed)
-                                <a href="{{ route('consent-form.sign', $f) }}" class="btn btn-sm btn-success" title="Get Signature">
-                                    <i class="bi bi-pen"></i>
-                                </a>
-                                @endif
-                                @can('consent-forms.edit')
-                                <a href="{{ route('consent-forms.edit', $f) }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i></a>
-                                @endcan
-                                @can('consent-forms.delete')
-                                <form action="{{ route('consent-forms.destroy',$f) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete?')">
-                                    @csrf @method('DELETE')
-                                    <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
-                                </form>
-                                @endcan
-                            </td>
+                            <th>#</th>
+                            <th>Patient</th>
+                            <th>Title</th>
+                            <th>Signed</th>
+                            <th>Sign Date</th>
+                            <th>Actions</th>
                         </tr>
-                        @endforeach
-                    </tbody>
+                    </thead>
                 </table>
             </div>
         </div>
     </div>
 </div>
 @endsection
+
 @section('script')
-<style>.text-theme-color{color:#B1083C;}.btn-theme{background:linear-gradient(90deg,#B1083C,#d13729);color:#fff;border:none;}.shadow-css{background:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.08);}</style>
-<script>$(function(){ $('#cfTable').DataTable({responsive:true,pageLength:25}); });</script>
+<style>
+    .text-theme-color{color:#B1083C;}
+    .btn-theme{background:linear-gradient(90deg,#B1083C,#d13729);color:#fff;border:none;}
+    .shadow-css{background:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.08);}
+    #consentFormsTable thead th{background:#B1083C!important;color:#fff!important;border-color:#9a072f!important;white-space:nowrap;}
+    #consentFormsTable thead .sorting_asc,#consentFormsTable thead .sorting_desc{background:#8e0630!important;}
+</style>
+<script>
+$(function(){
+    $('#consentFormsTable').DataTable({
+        serverSide: true,
+        processing: true,
+        ajax: '{{ route("consent-forms.index") }}',
+        columns: [
+            {data:'DT_RowIndex', name:'DT_RowIndex', orderable:false, searchable:false, width:'50px'},
+            {data:'patient_name', name:'patient.name'},
+            {data:'form_title', name:'form_title'},
+            {data:'signed_badge', name:'signed', orderable:true, searchable:false},
+            {data:'signed_at_fmt', name:'signed_at', orderable:true, searchable:false},
+            {data:'action', name:'action', orderable:false, searchable:false, className:'text-center'},
+        ],
+        order: [[1, 'asc']],
+        responsive: true,
+        pageLength: 15,
+        language: {
+            searchPlaceholder: 'Search...',
+            processing: '<div class="spinner-border spinner-border-sm" style="color:#B1083C"></div> Loading…'
+        },
+    });
+});
+</script>
 @endsection

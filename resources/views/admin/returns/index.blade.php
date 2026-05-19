@@ -1,5 +1,4 @@
 @extends('layouts.admin')
-
 @section('content')
 <div class="container-fluid">
     <div class="row pt-3 mx-1">
@@ -15,31 +14,18 @@
         <div class="col-12">
             @include('flash-message')
             <div class="shadow-css p-3">
-                <table id="returnTable" class="table table-hover w-100">
-                    <thead class="table-light">
-                        <tr><th>#</th><th>Appointment</th><th>Product</th><th>Qty</th><th>Return To</th><th>Refund</th><th>Date</th><th>Actions</th></tr>
-                    </thead>
-                    <tbody>
-                        @foreach($returns as $i => $r)
+                <table id="returnsTable" class="table table-hover w-100">
+                    <thead>
                         <tr>
-                            <td>{{ $i+1 }}</td>
-                            <td>{{ $r->appointment->appointment_id ?? $r->appointment_id }}</td>
-                            <td>{{ $r->product->name ?? '—' }}</td>
-                            <td>{{ $r->quantity }}</td>
-                            <td><span class="badge {{ $r->return_to==='inventory'?'bg-success':'bg-danger' }}">{{ ucfirst($r->return_to) }}</span></td>
-                            <td>{{ $r->refund_amount ? 'PKR '.number_format($r->refund_amount,2) : '—' }}</td>
-                            <td>{{ $r->created_at->format('d M Y') }}</td>
-                            <td>
-                                @can('returns.delete')
-                                <form action="{{ route('returns.destroy',$r) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete?')">
-                                    @csrf @method('DELETE')
-                                    <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
-                                </form>
-                                @endcan
-                            </td>
+                            <th>#</th>
+                            <th>Patient / Appt</th>
+                            <th>Product</th>
+                            <th>Qty</th>
+                            <th>Refund Amount</th>
+                            <th>Date</th>
+                            <th>Actions</th>
                         </tr>
-                        @endforeach
-                    </tbody>
+                    </thead>
                 </table>
             </div>
         </div>
@@ -52,6 +38,32 @@
     .text-theme-color{color:#B1083C;}
     .btn-theme{background:linear-gradient(90deg,#B1083C,#d13729);color:#fff;border:none;}
     .shadow-css{background:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.08);}
+    #returnsTable thead th{background:#B1083C!important;color:#fff!important;border-color:#9a072f!important;white-space:nowrap;}
+    #returnsTable thead .sorting_asc,#returnsTable thead .sorting_desc{background:#8e0630!important;}
 </style>
-<script>$(function(){ $('#returnTable').DataTable({responsive:true,pageLength:25,order:[[6,'desc']]}); });</script>
+<script>
+$(function(){
+    $('#returnsTable').DataTable({
+        serverSide: true,
+        processing: true,
+        ajax: '{{ route("returns.index") }}',
+        columns: [
+            {data:'DT_RowIndex', name:'DT_RowIndex', orderable:false, searchable:false, width:'50px'},
+            {data:'patient_name', name:'appointment_id'},
+            {data:'product_name', name:'product.name'},
+            {data:'quantity', name:'quantity'},
+            {data:'refund_amount_fmt', name:'refund_amount', orderable:true, searchable:false},
+            {data:'date', name:'created_at'},
+            {data:'action', name:'action', orderable:false, searchable:false, className:'text-center'},
+        ],
+        order: [[5, 'desc']],
+        responsive: true,
+        pageLength: 15,
+        language: {
+            searchPlaceholder: 'Search...',
+            processing: '<div class="spinner-border spinner-border-sm" style="color:#B1083C"></div> Loading…'
+        },
+    });
+});
+</script>
 @endsection

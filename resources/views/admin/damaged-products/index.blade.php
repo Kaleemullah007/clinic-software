@@ -1,5 +1,4 @@
 @extends('layouts.admin')
-
 @section('content')
 <div class="container-fluid">
     <div class="row pt-3 mx-1">
@@ -15,39 +14,56 @@
         <div class="col-12">
             @include('flash-message')
             <div class="shadow-css p-3">
-                <table id="dmgTable" class="table table-hover w-100">
-                    <thead class="table-light">
-                        <tr><th>#</th><th>Product</th><th>Variation</th><th>Qty</th><th>Cost Value</th><th>Reason</th><th>Reported By</th><th>Date</th><th>Actions</th></tr>
-                    </thead>
-                    <tbody>
-                        @foreach($records as $i => $r)
+                <table id="damagedTable" class="table table-hover w-100">
+                    <thead>
                         <tr>
-                            <td>{{ $i+1 }}</td>
-                            <td>{{ $r->product->name ?? '—' }}</td>
-                            <td>{{ $r->variation->name ?? '—' }}</td>
-                            <td>{{ $r->quantity }}</td>
-                            <td>{{ $r->cost_value ? 'PKR '.number_format($r->cost_value,2) : '—' }}</td>
-                            <td>{{ Str::limit($r->reason,40) ?? '—' }}</td>
-                            <td>{{ $r->reportedBy->name ?? '—' }}</td>
-                            <td>{{ $r->created_at->format('d M Y') }}</td>
-                            <td>
-                                @can('damaged-products.delete')
-                                <form action="{{ route('damaged-products.destroy',$r) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete?')">
-                                    @csrf @method('DELETE')
-                                    <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
-                                </form>
-                                @endcan
-                            </td>
+                            <th>#</th>
+                            <th>Product</th>
+                            <th>Qty</th>
+                            <th>Reason</th>
+                            <th>Reported By</th>
+                            <th>Date</th>
+                            <th>Actions</th>
                         </tr>
-                        @endforeach
-                    </tbody>
+                    </thead>
                 </table>
             </div>
         </div>
     </div>
 </div>
 @endsection
+
 @section('script')
-<style>.text-theme-color{color:#B1083C;}.btn-theme{background:linear-gradient(90deg,#B1083C,#d13729);color:#fff;border:none;}.shadow-css{background:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.08);}</style>
-<script>$(function(){ $('#dmgTable').DataTable({responsive:true,pageLength:25,order:[[7,'desc']]}); });</script>
+<style>
+    .text-theme-color{color:#B1083C;}
+    .btn-theme{background:linear-gradient(90deg,#B1083C,#d13729);color:#fff;border:none;}
+    .shadow-css{background:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.08);}
+    #damagedTable thead th{background:#B1083C!important;color:#fff!important;border-color:#9a072f!important;white-space:nowrap;}
+    #damagedTable thead .sorting_asc,#damagedTable thead .sorting_desc{background:#8e0630!important;}
+</style>
+<script>
+$(function(){
+    $('#damagedTable').DataTable({
+        serverSide: true,
+        processing: true,
+        ajax: '{{ route("damaged-products.index") }}',
+        columns: [
+            {data:'DT_RowIndex', name:'DT_RowIndex', orderable:false, searchable:false, width:'50px'},
+            {data:'product_name', name:'product.name'},
+            {data:'quantity', name:'quantity'},
+            {data:'reason_short', name:'reason', orderable:false},
+            {data:'reported_by_name', name:'reportedBy.name'},
+            {data:'date', name:'created_at'},
+            {data:'action', name:'action', orderable:false, searchable:false, className:'text-center'},
+        ],
+        order: [[5, 'desc']],
+        responsive: true,
+        pageLength: 15,
+        language: {
+            searchPlaceholder: 'Search...',
+            processing: '<div class="spinner-border spinner-border-sm" style="color:#B1083C"></div> Loading…'
+        },
+    });
+});
+</script>
 @endsection

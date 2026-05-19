@@ -1,28 +1,27 @@
-<table class="table border table-striped">
+<table class="table border table-striped table-hover align-middle" id="servicesTable">
     <thead>
         <tr>
             <th>#</th>
             <th>Name</th>
             <th>Price</th>
+            <th>Total Services</th>
             <th>Status</th>
             <th>Action</th>
         </tr>
     </thead>
     <tbody>
-    @if($categories->count()>0)
-    <?php
-     if(request('page')>1)
-
-        $counter = ((request('page')-1)*10) +1;
-        else
-        $counter = 1;
-     ?>   
-    @foreach($categories as $category)
+    @forelse($categories as $category)
         <tr>
-            <th>{{$counter++}}</th>
+            <th>{{ $loop->iteration }}</th>
             <td>{{$category->name}}</td>
             <td>{{auth()->user()->currency}} {{number_format($category->price,2)}}</td>
             <!--<td>{{$category->ParentCategory->name ?? ''}}</td>-->
+            <td data-order="{{ $category->appointment_services_count ?? 0 }}">
+                <span class="badge rounded-pill"
+                      style="background:#B1083C; font-size:.82rem; padding:4px 10px">
+                    {{ $category->appointment_services_count ?? 0 }}
+                </span>
+            </td>
             <td>
                 <input type="checkbox"  data-toggle="toggle"   data-size="sm" data-onstyle="success"
                 data-offstyle="danger" data-onlabel="Active" data-offlabel="Inactive" @if($category->status == 1) checked @endif >
@@ -45,13 +44,10 @@
                 </div>
             </td>
         </tr>
-    @endforeach
-    @else
+    @empty
         <tr>
-            <td colspan="5" class="text-center">No Data Found</td>
+            <td colspan="6" class="text-center text-muted py-4">No services found.</td>
         </tr>
-    @endif
+    @endforelse
     </tbody>
 </table>
-
-{!! $categories->withQueryString()->links('pagination::bootstrap-5') !!}

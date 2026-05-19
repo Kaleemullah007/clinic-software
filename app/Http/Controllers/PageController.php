@@ -6,6 +6,8 @@ use App\Models\Page;
 use App\Http\Requests\StorePageRequest;
 use App\Http\Requests\UpdatePageRequest;
 use App\Models\Category;
+use Illuminate\Http\Request;
+use Yajra\DataTables\Facades\DataTables;
 
 class PageController extends Controller
 {
@@ -20,14 +22,35 @@ class PageController extends Controller
         $this->middleware(['auth','avoid-back-history']);
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $pages = Page::with('category')->paginate(config('services.per_page',10));
-        if($pages->lastPage() >= request('page')){
-            return view('admin.pages.index',compact('pages'));
-        }
-        return to_route('pages.index',['page'=>$pages->lastPage()]);
+        if ($request->ajax()) {
+            $query = Page::latest();
 
+            return DataTables::of($query)
+                ->addIndexColumn()
+                ->addColumn('status', function (Page $p) {
+                    return $p->status
+                        ? '<span class="badge bg-success">Active</span>'
+                        : '<span class="badge bg-danger">Inactive</span>';
+                })
+                ->addColumn('action', function (Page $p) {
+                    $edit = auth()->user()->can('update', $p)
+                        ? '<a href="' . route('pages.edit', $p->id) . '" class="btn btn-sm btn-outline-secondary" title="Edit"><i class="bi bi-pencil"></i></a>'
+                        : '';
+                    $del = auth()->user()->can('delete', $p)
+                        ? '<form action="' . route('pages.destroy', $p->id) . '" method="POST" class="d-inline" onsubmit="return confirm(\'Delete?\')">
+                            ' . csrf_field() . method_field('DELETE') . '
+                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete"><i class="bi bi-trash"></i></button>
+                           </form>'
+                        : '';
+                    return '<div class="d-flex gap-1">' . $edit . $del . '</div>';
+                })
+                ->rawColumns(['status', 'action'])
+                ->make(true);
+        }
+
+        return view('admin.pages.index');
     }
 
 

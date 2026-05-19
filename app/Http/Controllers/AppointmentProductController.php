@@ -9,15 +9,59 @@ use App\Models\Inventory;
 use App\Models\InventoryMovement;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Yajra\DataTables\Facades\DataTables;
 
 class AppointmentProductController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $this->authorize('appointment-products.view');
-        $items = AppointmentProduct::with('appointment', 'product', 'variation', 'addedBy')
-            ->latest()->paginate(50);
-        return view('admin.appointment-products.index', compact('items'));
+
+        if ($request->ajax()) {
+            $query = AppointmentProduct::with('appointment.patient', 'variation', 'addedBy')->latest();
+
+            return DataTables::of($query)
+                ->addIndexColumn()
+                ->addColumn('patient_name', fn(AppointmentProduct $ap) =>
+                    $ap->appointment->patient->name ?? ($ap->appointment->name ?? '—')
+                )
+                ->addColumn('appointment_no', fn(AppointmentProduct $ap) =>
+                    $ap->appointment->appointment_id ?? $ap->appointment_id
+                )
+                ->addColumn('product_col', fn(AppointmentProduct $ap) =>
+                    $ap->product_name . ($ap->variation ? ' (' . $ap->variation->name . ')' : '')
+                )
+                ->addColumn('qty_fmt', fn(AppointmentProduct $ap) =>
+                    $ap->quantity
+                )
+                ->addColumn('unit_price_fmt', fn(AppointmentProduct $ap) =>
+                    'PKR ' . number_format($ap->unit_price, 2)
+                )
+                ->addColumn('total_price_fmt', fn(AppointmentProduct $ap) =>
+                    'PKR ' . number_format($ap->total_price, 2)
+                )
+                ->addColumn('doctor_share_fmt', fn(AppointmentProduct $ap) =>
+                    'PKR ' . number_format($ap->doctor_share_amount ?? 0, 2)
+                )
+                ->addColumn('added_by_name', fn(AppointmentProduct $ap) =>
+                    $ap->addedBy->name ?? '—'
+                )
+                ->addColumn('date_fmt', fn(AppointmentProduct $ap) =>
+                    $ap->created_at ? $ap->created_at->format('d M Y') : '—'
+                )
+                ->addColumn('action', function(AppointmentProduct $ap) {
+                    $del = auth()->user()->can('appointment-products.delete')
+                        ? '<form action="' . route('appointment-products.destroy', $ap->id) . '" method="POST" class="d-inline" onsubmit="return confirm(\'Remove?\')">'
+                          . csrf_field() . method_field('DELETE')
+                          . '<button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button></form>'
+                        : '';
+                    return $del;
+                })
+                ->rawColumns(['action'])
+                ->make(true);
+        }
+
+        return view('admin.appointment-products.index');
     }
 
     public function create()

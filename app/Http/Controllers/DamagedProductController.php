@@ -7,14 +7,44 @@ use App\Models\Inventory;
 use App\Models\InventoryMovement;
 use App\Models\Product;
 use Illuminate\Http\Request;
+use Yajra\DataTables\Facades\DataTables;
 
 class DamagedProductController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $this->authorize('damaged-products.view');
-        $records = DamagedProduct::with('product', 'variation', 'reportedBy')->latest()->get();
-        return view('admin.damaged-products.index', compact('records'));
+
+        if ($request->ajax()) {
+            $query = DamagedProduct::with('product', 'variation', 'reportedBy')->latest();
+
+            return DataTables::of($query)
+                ->addIndexColumn()
+                ->addColumn('product_name', function (DamagedProduct $r) {
+                    return e($r->product->name ?? '—');
+                })
+                ->addColumn('reason_short', function (DamagedProduct $r) {
+                    return e(\Illuminate\Support\Str::limit($r->reason ?? '—', 40));
+                })
+                ->addColumn('reported_by_name', function (DamagedProduct $r) {
+                    return e($r->reportedBy->name ?? '—');
+                })
+                ->addColumn('date', function (DamagedProduct $r) {
+                    return optional($r->created_at)?->format('d M Y') ?? '—';
+                })
+                ->addColumn('action', function (DamagedProduct $r) {
+                    if (auth()->user()->can('damaged-products.delete')) {
+                        return '<form action="' . route('damaged-products.destroy', $r->id) . '" method="POST" class="d-inline" onsubmit="return confirm(\'Delete this record?\')">'
+                             . csrf_field() . method_field('DELETE')
+                             . '<button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button></form>';
+                    }
+                    return '';
+                })
+                ->rawColumns(['action'])
+                ->make(true);
+        }
+
+        return view('admin.damaged-products.index');
     }
 
     public function create()

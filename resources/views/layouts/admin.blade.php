@@ -278,6 +278,23 @@
                     </li>
                     @endcan
 
+                    {{-- ── Tools ── --}}
+                    @if(auth()->user()->hasRole('super-admin') || auth()->user()->canAny(['taxonomy.manage','imports.view','imports.create']))
+                    <li class="sidebar-section-label pt-2 pb-1">
+                        <small class="text-uppercase text-muted px-3" style="font-size:10px;letter-spacing:1px;display:block">Tools</small>
+                    </li>
+                    @endif
+                    @if(auth()->user()->hasRole('super-admin') || auth()->user()->can('taxonomy.manage'))
+                    <li class="{{ request()->routeIs('taxonomy.*') ? 'active' : '' }}">
+                        <a href="{{ route('taxonomy.index') }}"><i class="bi fs-5 bi-arrow-left-right"></i><span class="hide-menu">Service Migration</span></a>
+                    </li>
+                    @endif
+                    @canany(['imports.view','imports.create'])
+                    <li class="{{ request()->routeIs('imports.*') ? 'active' : '' }}">
+                        <a href="{{ route('imports.index') }}"><i class="bi fs-5 bi-file-earmark-arrow-up"></i><span class="hide-menu">CSV Import</span></a>
+                    </li>
+                    @endcanany
+
                     {{-- ── Reports ── --}}
                     @can('reports.view')
                     <li class="sidebar-section-label pt-2 pb-1">
@@ -316,6 +333,7 @@
 </style>
 
 <script src="https://gitcdn.github.io/bootstrap-toggle/2.2.0/js/bootstrap-toggle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" defer></script>
 <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.13.2/themes/smoothness/jquery-ui.css">
 <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.13.2/jquery-ui.min.js" defer></script>
 <script src="{{ asset('assets/libs/select2/dist/js/select2.full.min.js') }}" defer></script>

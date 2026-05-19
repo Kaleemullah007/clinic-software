@@ -19,6 +19,16 @@ class ReportController extends Controller
         return view('admin.reports.index');
     }
 
+    /* ── helper: check sub-permission, fallback to reports.view for backwards compat ── */
+    private function authorizeReport(string $sub): void
+    {
+        $user = auth()->user();
+        // Super-admin bypass (Gate::before) or specific sub-perm or broad view perm
+        if (!$user->can($sub) && !$user->can('reports.view')) {
+            abort(403);
+        }
+    }
+
     public function revenue(Request $request)
     {
         $this->authorize('reports.view');

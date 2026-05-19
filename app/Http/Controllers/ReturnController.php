@@ -8,14 +8,45 @@ use App\Models\Inventory;
 use App\Models\InventoryMovement;
 use App\Models\DamagedProduct;
 use Illuminate\Http\Request;
+use Yajra\DataTables\Facades\DataTables;
 
 class ReturnController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $this->authorize('returns.view');
-        $returns = AppointmentReturn::with('appointment', 'product', 'processedBy')->latest()->get();
-        return view('admin.returns.index', compact('returns'));
+
+        if ($request->ajax()) {
+            $query = AppointmentReturn::with('appointment', 'product', 'processedBy')->latest();
+
+            return DataTables::of($query)
+                ->addIndexColumn()
+                ->addColumn('patient_name', function (AppointmentReturn $r) {
+                    return e($r->appointment->appointment_id ?? ('Appt #' . $r->appointment_id));
+                })
+                ->addColumn('product_name', function (AppointmentReturn $r) {
+                    return e($r->product->name ?? '—');
+                })
+                ->addColumn('refund_amount_fmt', function (AppointmentReturn $r) {
+                    return $r->refund_amount ? 'PKR ' . number_format($r->refund_amount, 2) : '—';
+                })
+                ->addColumn('date', function (AppointmentReturn $r) {
+                    return optional($r->created_at)?->format('d M Y') ?? '—';
+                })
+                ->addColumn('action', function (AppointmentReturn $r) {
+                    $view = '<a href="' . route('returns.show', $r->id) . '" class="btn btn-sm btn-outline-info me-1"><i class="bi bi-eye"></i></a>';
+                    $del  = auth()->user()->can('returns.delete')
+                        ? '<form action="' . route('returns.destroy', $r->id) . '" method="POST" class="d-inline" onsubmit="return confirm(\'Delete?\')">'
+                          . csrf_field() . method_field('DELETE')
+                          . '<button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button></form>'
+                        : '';
+                    return $view . $del;
+                })
+                ->rawColumns(['action'])
+                ->make(true);
+        }
+
+        return view('admin.returns.index');
     }
 
     public function create()

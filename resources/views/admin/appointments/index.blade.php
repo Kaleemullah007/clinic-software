@@ -19,10 +19,10 @@
         {{-- Custom filter bar --}}
         <div class="row mb-3 g-2 align-items-end">
             <div class="col-lg-3 col-md-6 col-12">
-                <select class="form-select border-secondary" id="filterPatient">
+                <select id="filterPatient" style="width:100%">
                     <option value="">All Patients</option>
                     @foreach ($patients as $patient)
-                        <option value="{{ $patient->id }}">{{ $patient->name }}</option>
+                        <option value="{{ $patient->id }}">{{ $patient->name }}{{ $patient->appointments_count > 0 ? ' ('.$patient->appointments_count.')' : '' }}</option>
                     @endforeach
                 </select>
             </div>
@@ -74,9 +74,62 @@
     .btn-outline-theme { border-color:#B1083C; color:#B1083C; }
     .btn-outline-theme:hover { background:#B1083C; color:#fff; }
     #appointmentsTable thead th { background:linear-gradient(90deg,#B1083C 0%,#d13729 100%); color:#fff; border:none; }
+
+    /* Select2 theme */
+    #filterPatient + .select2-container .select2-selection--single {
+        height: 38px;
+        border: 1px solid #adb5bd;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+    }
+    #filterPatient + .select2-container .select2-selection__rendered {
+        line-height: 38px;
+        padding-left: 10px;
+        color: #212529;
+    }
+    #filterPatient + .select2-container .select2-selection__arrow {
+        height: 36px;
+        right: 6px;
+    }
+    .select2-container--default .select2-results__option--highlighted {
+        background-color: #B1083C !important;
+    }
+    .select2-container--default .select2-results__option--selected {
+        background-color: #f5c6d3 !important;
+        color: #B1083C !important;
+    }
+    .select2-dropdown {
+        border-color: #B1083C !important;
+        border-radius: 6px !important;
+    }
+    .select2-container--default .select2-search--dropdown .select2-search__field:focus {
+        border-color: #B1083C !important;
+        outline: none;
+    }
+    .select2-container--open .select2-selection--single {
+        border-color: #B1083C !important;
+        box-shadow: 0 0 0 .2rem rgba(177,8,60,.2) !important;
+    }
+    .select2-selection__clear {
+        color: #B1083C !important;
+        font-size: 1.1rem;
+        font-weight: bold;
+        margin-right: 4px;
+    }
 </style>
 <script>
-$(function () {
+// Everything in window.load so Select2 + DataTables are guaranteed ready
+$(window).on('load', function () {
+
+    // ── Searchable patient dropdown ──────────────────────────────────────────
+    $('#filterPatient').select2({
+        placeholder: 'All Patients',
+        allowClear: true,
+        width: '100%',
+    });
+
+    // ── DataTable ────────────────────────────────────────────────────────────
     var table = $('#appointmentsTable').DataTable({
         serverSide: true,
         processing: true,
@@ -104,16 +157,18 @@ $(function () {
         language: { searchPlaceholder: 'Search name or phone…', processing: '<div class="spinner-border spinner-border-sm text-danger"></div> Loading…' },
     });
 
-    // Wire filter bar → reload DataTable
-    $('#filterPatient, #filterStatus').on('change', function () { table.ajax.reload(); });
+    // ── Filter bar wiring ────────────────────────────────────────────────────
+    $('#filterPatient').on('select2:select select2:clear', function () { table.ajax.reload(); });
+    $('#filterStatus').on('change', function () { table.ajax.reload(); });
     $('#filterDate').on('change', function () { table.ajax.reload(); });
     $('#resetFilters').on('click', function () {
-        $('#filterPatient, #filterStatus').val('');
+        $('#filterPatient').val(null).trigger('change'); // clears Select2
+        $('#filterStatus').val('');
         $('#filterDate').val('');
         table.search('').ajax.reload();
     });
 
-    // Prescription modal
+    // ── Prescription modal ───────────────────────────────────────────────────
     document.addEventListener('show.bs.modal', function (e) {
         if (e.target.id !== 'prescriptionModal') return;
         var btn = e.relatedTarget;

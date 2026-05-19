@@ -5,14 +5,54 @@ namespace App\Http\Controllers;
 use App\Models\Appointment;
 use App\Models\ConsentForm;
 use Illuminate\Http\Request;
+use Yajra\DataTables\Facades\DataTables;
 
 class ConsentFormController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $this->authorize('consent-forms.view');
-        $forms = ConsentForm::with('appointment', 'patient', 'creator')->latest()->get();
-        return view('admin.consent-forms.index', compact('forms'));
+
+        if ($request->ajax()) {
+            $query = ConsentForm::with('appointment', 'patient', 'creator')->latest('consent_forms.created_at');
+
+            return DataTables::of($query)
+                ->addIndexColumn()
+                ->addColumn('patient_name', function (ConsentForm $f) {
+                    return e($f->patient->name ?? '—');
+                })
+                ->addColumn('signed_badge', function (ConsentForm $f) {
+                    return $f->signed
+                        ? '<span class="badge bg-success">Signed</span>'
+                        : '<span class="badge bg-warning text-dark">Pending</span>';
+                })
+                ->addColumn('signed_at_fmt', function (ConsentForm $f) {
+                    return optional($f->signed_at)?->format('d M Y') ?? '—';
+                })
+                ->addColumn('action', function (ConsentForm $f) {
+                    $html = '';
+
+                    if (!$f->signed) {
+                        $html .= '<a href="' . route('consent-form.sign', $f->id) . '" class="btn btn-sm btn-success me-1" title="Get Signature"><i class="bi bi-pen"></i></a>';
+                    }
+
+                    if (auth()->user()->can('consent-forms.edit')) {
+                        $html .= '<a href="' . route('consent-forms.edit', $f->id) . '" class="btn btn-sm btn-outline-secondary me-1"><i class="bi bi-pencil"></i></a>';
+                    }
+
+                    if (auth()->user()->can('consent-forms.delete')) {
+                        $html .= '<form action="' . route('consent-forms.destroy', $f->id) . '" method="POST" class="d-inline" onsubmit="return confirm(\'Delete?\')">'
+                               . csrf_field() . method_field('DELETE')
+                               . '<button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button></form>';
+                    }
+
+                    return $html;
+                })
+                ->rawColumns(['signed_badge', 'action'])
+                ->make(true);
+        }
+
+        return view('admin.consent-forms.index');
     }
 
     public function create()

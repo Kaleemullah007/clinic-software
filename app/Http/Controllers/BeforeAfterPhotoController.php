@@ -28,28 +28,33 @@ class BeforeAfterPhotoController extends Controller
     {
         $this->authorize('before-after-photos.create');
 
-        $data = $request->validate([
+        $request->validate([
             'appointment_id'  => 'required|exists:appointments,id',
             'patient_id'      => 'required|exists:users,id',
             'photo_type'      => 'required|in:before,after',
-            'photo'           => 'required|image|max:5120',
+            'photos'          => 'required|array|min:1',
+            'photos.*'        => 'image|max:10240',
             'caption'         => 'nullable|string|max:255',
             'patient_consent' => 'nullable|boolean',
         ]);
 
-        $path = $request->file('photo')->store('before-after', 'public');
+        $count = 0;
+        foreach ($request->file('photos') as $file) {
+            $path = $file->store('before-after', 'public');
 
-        BeforeAfterPhoto::create([
-            'appointment_id'  => $data['appointment_id'],
-            'patient_id'      => $data['patient_id'],
-            'photo_type'      => $data['photo_type'],
-            'file_path'       => $path,
-            'caption'         => $data['caption'] ?? null,
-            'patient_consent' => $request->boolean('patient_consent'),
-            'uploaded_by'     => auth()->id(),
-        ]);
+            BeforeAfterPhoto::create([
+                'appointment_id'  => $request->appointment_id,
+                'patient_id'      => $request->patient_id,
+                'photo_type'      => $request->photo_type,
+                'file_path'       => $path,
+                'caption'         => $request->caption ?? null,
+                'patient_consent' => $request->boolean('patient_consent'),
+                'uploaded_by'     => auth()->id(),
+            ]);
+            $count++;
+        }
 
-        return back()->with('success', 'Photo uploaded successfully.');
+        return back()->with('success', $count . ' photo(s) uploaded successfully.');
     }
 
     public function destroy(BeforeAfterPhoto $beforeAfterPhoto)

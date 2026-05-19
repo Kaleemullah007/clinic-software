@@ -45,7 +45,9 @@ class PermissionSeeder extends Seeder
         'call-logs'          => ['view', 'create', 'edit', 'delete'],
         'consent-forms'      => ['view', 'create', 'edit', 'delete'],
         'before-after-photos'=> ['view', 'create', 'delete'],
-        'reports'            => ['view'],
+        'reports'            => ['view', 'revenue', 'expenses', 'inventory', 'salaries', 'doctor-performance'],
+        'taxonomy'           => ['manage'],
+        'imports'            => ['view', 'create', 'rollback'],
     ];
 
     public function run(): void

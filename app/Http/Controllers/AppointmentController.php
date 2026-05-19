@@ -113,7 +113,7 @@ class AppointmentController extends Controller
 
         $availables = $this->getTimeSlots();
         $services   = Category::get();
-        $patients   = User::withCount('appointments')->where('role', 'patient')->get();
+        $patients   = User::withCount('appointments')->whereNotIn('role', ['doctor', 'admin'])->get();
 
         return view('admin.appointments.index', compact('availables', 'services', 'patients'));
     }

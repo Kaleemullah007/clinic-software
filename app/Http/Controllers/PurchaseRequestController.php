@@ -6,15 +6,67 @@ use App\Models\Product;
 use App\Models\PurchaseRequest;
 use App\Models\PurchaseRequestItem;
 use Illuminate\Http\Request;
+use Yajra\DataTables\Facades\DataTables;
 
 class PurchaseRequestController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $this->authorize('purchase-requests.view');
-        $prs = PurchaseRequest::with('requestedBy', 'approvedBy')
-            ->latest()->get();
-        return view('admin.purchase-requests.index', compact('prs'));
+
+        if ($request->ajax()) {
+            $query = PurchaseRequest::with('requestedBy', 'approvedBy', 'items')->latest();
+
+            return DataTables::of($query)
+                ->addIndexColumn()
+                ->addColumn('pr_number_link', function (PurchaseRequest $pr) {
+                    return '<a href="' . route('purchase-requests.show', $pr->id) . '" class="fw-semibold text-theme-color">' . e($pr->pr_number) . '</a>';
+                })
+                ->addColumn('items_count', function (PurchaseRequest $pr) {
+                    return $pr->items->count();
+                })
+                ->addColumn('requested_by_name', function (PurchaseRequest $pr) {
+                    return e($pr->requestedBy->name ?? '—');
+                })
+                ->addColumn('approved_by_name', function (PurchaseRequest $pr) {
+                    return e($pr->approvedBy->name ?? '—');
+                })
+                ->addColumn('status_badge', function (PurchaseRequest $pr) {
+                    $colors = ['pending' => 'warning', 'approved' => 'success', 'rejected' => 'danger', 'ordered' => 'info'];
+                    $color  = $colors[$pr->status] ?? 'secondary';
+                    return '<span class="badge bg-' . $color . '">' . ucfirst($pr->status) . '</span>';
+                })
+                ->addColumn('date', function (PurchaseRequest $pr) {
+                    return optional($pr->created_at)?->format('d M Y') ?? '—';
+                })
+                ->addColumn('action', function (PurchaseRequest $pr) {
+                    $html = '<a href="' . route('purchase-requests.show', $pr->id) . '" class="btn btn-sm btn-outline-info me-1"><i class="bi bi-eye"></i></a>';
+
+                    if ($pr->status === 'pending') {
+                        if (auth()->user()->can('purchase-requests.edit')) {
+                            $html .= '<a href="' . route('purchase-requests.edit', $pr->id) . '" class="btn btn-sm btn-outline-secondary me-1"><i class="bi bi-pencil"></i></a>';
+                        }
+                        if (auth()->user()->can('purchase-requests.approve')) {
+                            $html .= '<form action="' . route('purchase-request.approve', $pr->id) . '" method="POST" class="d-inline me-1">'
+                                   . csrf_field()
+                                   . '<button class="btn btn-sm btn-success"><i class="bi bi-check-lg"></i></button></form>';
+                            $html .= '<button class="btn btn-sm btn-danger me-1" onclick="rejectPR(' . $pr->id . ')"><i class="bi bi-x-lg"></i></button>';
+                        }
+                    }
+
+                    if (auth()->user()->can('purchase-requests.delete') && in_array($pr->status, ['pending', 'rejected'])) {
+                        $html .= '<form action="' . route('purchase-requests.destroy', $pr->id) . '" method="POST" class="d-inline" onsubmit="return confirm(\'Delete this request?\')">'
+                               . csrf_field() . method_field('DELETE')
+                               . '<button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button></form>';
+                    }
+
+                    return $html;
+                })
+                ->rawColumns(['pr_number_link', 'status_badge', 'action'])
+                ->make(true);
+        }
+
+        return view('admin.purchase-requests.index');
     }
 
     public function create()

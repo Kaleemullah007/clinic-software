@@ -7,14 +7,63 @@ use App\Models\DoctorAgreement;
 use App\Models\Service;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Yajra\DataTables\Facades\DataTables;
 
 class DoctorAgreementController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $this->authorize('doctor-agreements.view');
-        $agreements = DoctorAgreement::with('doctor', 'clinic', 'service')->latest()->get();
-        return view('admin.doctor-agreements.index', compact('agreements'));
+
+        if ($request->ajax()) {
+            $query = DoctorAgreement::with('doctor', 'clinic', 'service')->latest('doctor_agreements.created_at');
+
+            return DataTables::of($query)
+                ->addIndexColumn()
+                ->addColumn('doctor_name', fn(DoctorAgreement $a) =>
+                    $a->doctor->name ?? '—'
+                )
+                ->addColumn('clinic_name', fn(DoctorAgreement $a) =>
+                    $a->clinic->name ?? 'All'
+                )
+                ->addColumn('service_name', fn(DoctorAgreement $a) =>
+                    $a->service->name ?? 'All'
+                )
+                ->addColumn('share_type_badge', fn(DoctorAgreement $a) =>
+                    '<span class="badge bg-secondary">' . ucfirst($a->share_type) . '</span>'
+                )
+                ->addColumn('doctor_share_fmt', fn(DoctorAgreement $a) =>
+                    $a->doctor_share . ($a->share_type === 'percentage' ? '%' : ' PKR')
+                )
+                ->addColumn('clinic_share_fmt', fn(DoctorAgreement $a) =>
+                    $a->clinic_share . ($a->share_type === 'percentage' ? '%' : ' PKR')
+                )
+                ->addColumn('effective_from_fmt', fn(DoctorAgreement $a) =>
+                    $a->effective_from ? \Carbon\Carbon::parse($a->effective_from)->format('d M Y') : '—'
+                )
+                ->addColumn('effective_to_fmt', fn(DoctorAgreement $a) =>
+                    $a->effective_to ? \Carbon\Carbon::parse($a->effective_to)->format('d M Y') : 'Ongoing'
+                )
+                ->addColumn('status_badge', fn(DoctorAgreement $a) =>
+                    '<span class="badge ' . ($a->is_active ? 'bg-success' : 'bg-secondary') . '">'
+                    . ($a->is_active ? 'Active' : 'Inactive') . '</span>'
+                )
+                ->addColumn('action', function(DoctorAgreement $a) {
+                    $edit = auth()->user()->can('doctor-agreements.edit')
+                        ? '<a href="' . route('doctor-agreements.edit', $a->id) . '" class="btn btn-sm btn-outline-secondary me-1"><i class="bi bi-pencil"></i></a>'
+                        : '';
+                    $del = auth()->user()->can('doctor-agreements.delete')
+                        ? '<form action="' . route('doctor-agreements.destroy', $a->id) . '" method="POST" class="d-inline" onsubmit="return confirm(\'Delete?\')">'
+                          . csrf_field() . method_field('DELETE')
+                          . '<button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button></form>'
+                        : '';
+                    return $edit . $del;
+                })
+                ->rawColumns(['share_type_badge', 'status_badge', 'action'])
+                ->make(true);
+        }
+
+        return view('admin.doctor-agreements.index');
     }
 
     public function create()

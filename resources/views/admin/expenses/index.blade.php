@@ -21,6 +21,43 @@
     <div class="row mx-1">
         <div class="col-12">
             @include('flash-message')
+            {{-- Date Filter Bar --}}
+            <div class="shadow-css p-3 mb-3">
+                <div class="row g-2 align-items-end">
+                    <div class="col-12 col-md-auto">
+                        <label class="form-label mb-1 small fw-semibold">Date Range</label>
+                        <select id="expenseDateRange" class="form-select form-select-sm" style="min-width:160px;">
+                            <option value="">All Dates</option>
+                            <option value="this_week">This Week</option>
+                            <option value="last_week">Last Week</option>
+                            <option value="this_month" selected>This Month</option>
+                            <option value="last_month">Last Month</option>
+                            <option value="custom">Custom Range</option>
+                        </select>
+                    </div>
+                    <div class="col-12 col-md-auto d-none" id="expenseCustomDates">
+                        <div class="d-flex gap-2 align-items-end">
+                            <div>
+                                <label class="form-label mb-1 small fw-semibold">From</label>
+                                <input type="date" id="expenseDateFrom" class="form-control form-control-sm" style="min-width:140px;">
+                            </div>
+                            <div>
+                                <label class="form-label mb-1 small fw-semibold">To</label>
+                                <input type="date" id="expenseDateTo" class="form-control form-control-sm" style="min-width:140px;">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-auto">
+                        <button id="btnApplyExpenseFilter" class="btn btn-theme btn-sm">
+                            <i class="bi bi-funnel me-1"></i> Apply
+                        </button>
+                        <button id="btnResetExpenseFilter" class="btn btn-outline-secondary btn-sm ms-1">
+                            <i class="bi bi-x-circle me-1"></i> Reset
+                        </button>
+                    </div>
+                </div>
+            </div>
+
             <div class="shadow-css p-3">
                 <table id="expensesTable" class="table table-hover w-100">
                     <thead>
@@ -53,10 +90,17 @@
 </style>
 <script>
 $(function () {
-    $('#expensesTable').DataTable({
+    var expenseTable = $('#expensesTable').DataTable({
         serverSide: true,
         processing: true,
-        ajax: '{{ route("expenses.index") }}',
+        ajax: {
+            url: '{{ route("expenses.index") }}',
+            data: function (d) {
+                d.date_range = $('#expenseDateRange').val();
+                d.date_from  = $('#expenseDateFrom').val();
+                d.date_to    = $('#expenseDateTo').val();
+            }
+        },
         columns: [
             { data: 'DT_RowIndex',  name: 'DT_RowIndex',  orderable: false, searchable: false, width: '50px' },
             { data: 'title',        name: 'title' },
@@ -72,6 +116,32 @@ $(function () {
         pageLength: 15,
         language: { searchPlaceholder: 'Search expenses…', processing: '<div class="spinner-border spinner-border-sm text-danger"></div> Loading…' },
     });
+
+    // Show/hide custom date pickers
+    $('#expenseDateRange').on('change', function () {
+        if ($(this).val() === 'custom') {
+            $('#expenseCustomDates').removeClass('d-none');
+        } else {
+            $('#expenseCustomDates').addClass('d-none');
+        }
+    });
+
+    // Apply filter
+    $('#btnApplyExpenseFilter').on('click', function () {
+        expenseTable.ajax.reload();
+    });
+
+    // Reset filter
+    $('#btnResetExpenseFilter').on('click', function () {
+        $('#expenseDateRange').val('');
+        $('#expenseDateFrom').val('');
+        $('#expenseDateTo').val('');
+        $('#expenseCustomDates').addClass('d-none');
+        expenseTable.ajax.reload();
+    });
+
+    // Trigger initial load with "this_month" pre-selected
+    expenseTable.ajax.reload();
 });
 </script>
 @endsection

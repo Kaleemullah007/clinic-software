@@ -6,6 +6,7 @@ use App\Models\Category;
 use App\Http\Requests\StoreCategoryRequest;
 use App\Http\Requests\UpdateCategoryRequest;
 use Illuminate\Support\Arr;
+use Yajra\DataTables\Facades\DataTables;
 
 class CategoryController extends Controller
 {
@@ -27,13 +28,45 @@ class CategoryController extends Controller
 
     public function index()
     {
+        if (request()->ajax()) {
+            $query = Category::withCount('appointmentServices');
 
-        $categories = Category::with('ParentCategory')->paginate(config('services.per_page',10));
-        if($categories->lastPage() >= request('page')){
-            return view('admin.category.index',compact('categories'));
+            return DataTables::of($query)
+                ->addIndexColumn()
+                ->addColumn('price_col', fn (Category $c) =>
+                    (auth()->user()->currency ?? '') . ' ' . number_format($c->price, 2)
+                )
+                ->addColumn('total_services', fn (Category $c) =>
+                    '<span class="badge rounded-pill"
+                          style="background:#B1083C;font-size:.82rem;padding:4px 10px">'
+                    . $c->appointment_services_count . '</span>'
+                )
+                ->addColumn('status_col', fn (Category $c) =>
+                    '<input type="checkbox" data-toggle="toggle" data-size="sm"
+                            data-onstyle="success" data-offstyle="danger"
+                            data-onlabel="On" data-offlabel="Off"'
+                    . ($c->status ? ' checked' : '') . '>'
+                )
+                ->addColumn('action', function (Category $c) {
+                    $edit = '<a href="' . url('category/' . $c->id . '/edit') . '"
+                                class="btn border border-dark rounded-pill px-2 py-0 fs-6 link-dark me-1">
+                                <i class="bi bi-pencil"></i></a>';
+                    $del  = '<form action="' . route('category.destroy', $c->id) . '" method="POST"
+                                   class="d-inline" onsubmit="return confirm(\'Delete this service?\')">'
+                          . csrf_field() . method_field('DELETE')
+                          . '<button class="btn border border-dark rounded-pill px-2 py-0 fs-6 link-dark">
+                                <i class="bi bi-trash-fill"></i></button></form>';
+                    return $edit . $del;
+                })
+                // Allow server-side ordering on the withCount virtual column
+                ->orderColumn('total_services', function ($q, $order) {
+                    $q->orderBy('appointment_services_count', $order);
+                })
+                ->rawColumns(['total_services', 'status_col', 'action'])
+                ->make(true);
         }
-        return to_route('category.index',['page'=>$categories->lastPage()]);
 
+        return view('admin.category.index');
     }
 
     /**

@@ -20,4 +20,10 @@ class Category extends Model
     public function ParentCategory(){
         return $this->belongsTo('App\Models\Category','is_parent','id');
     }
+
+    /** Count of appointment_services that use this category */
+    public function appointmentServices()
+    {
+        return $this->hasMany(\App\Models\AppointmentService::class, 'service_id');
+    }
 }

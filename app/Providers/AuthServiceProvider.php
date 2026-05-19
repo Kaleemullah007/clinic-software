@@ -33,6 +33,13 @@ class AuthServiceProvider extends ServiceProvider
     {
         $this->registerPolicies();
 
+        // Super-admin bypasses ALL Gate / authorize() checks.
+        // This is the standard Spatie recommendation. Returning null for
+        // other roles falls through to normal permission checking.
+        Gate::before(function ($user, $ability) {
+            return $user->hasRole('super-admin') ? true : null;
+        });
+
         // $this->registerGates();
     }
 

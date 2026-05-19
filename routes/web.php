@@ -171,6 +171,25 @@ Route::group([
     // ── Before/After Photos ──────────────────────────────────────────────
     Route::resource('before-after-photos', \App\Http\Controllers\BeforeAfterPhotoController::class)->only(['index', 'store', 'destroy']);
 
+    // ── Taxonomy / Service Migration ─────────────────────────────────────
+    // Specific sub-routes MUST come before any resource to avoid wildcard capture
+    Route::get('taxonomy/appointment-services', [\App\Http\Controllers\TaxonomyController::class, 'getAppointmentServices'])->name('taxonomy.appointment-services');
+    Route::post('taxonomy/preview',  [\App\Http\Controllers\TaxonomyController::class, 'preview'])->name('taxonomy.preview');
+    Route::post('taxonomy/migrate',  [\App\Http\Controllers\TaxonomyController::class, 'migrate'])->name('taxonomy.migrate');
+    Route::get('taxonomy/progress',  [\App\Http\Controllers\TaxonomyController::class, 'progress'])->name('taxonomy.progress');
+    Route::get('taxonomy',           [\App\Http\Controllers\TaxonomyController::class, 'index'])->name('taxonomy.index');
+
+    // ── CSV Import ───────────────────────────────────────────────────────
+    Route::prefix('imports')->name('imports.')->group(function () {
+        Route::get('/',                                          [\App\Http\Controllers\ImportController::class, 'index'])->name('index');
+        Route::post('/upload',                                   [\App\Http\Controllers\ImportController::class, 'upload'])->name('upload');
+        Route::post('/start',                                    [\App\Http\Controllers\ImportController::class, 'start'])->name('start');
+        Route::get('/progress',                                  [\App\Http\Controllers\ImportController::class, 'progress'])->name('progress');
+        Route::get('/{importLog}/download-failed',               [\App\Http\Controllers\ImportController::class, 'downloadFailed'])->name('download-failed');
+        Route::post('/{importLog}/rollback',                     [\App\Http\Controllers\ImportController::class, 'rollback'])->name('rollback');
+        Route::delete('/{importLog}',                            [\App\Http\Controllers\ImportController::class, 'destroy'])->name('destroy');
+    });
+
     // ── Reports ──────────────────────────────────────────────────────────
     Route::get('reports', [\App\Http\Controllers\ReportController::class, 'index'])->name('reports.index');
     Route::get('reports/revenue', [\App\Http\Controllers\ReportController::class, 'revenue'])->name('reports.revenue');

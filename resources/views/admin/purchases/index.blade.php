@@ -52,7 +52,7 @@ $(function () {
         ajax: '{{ route("purchases.index") }}',
         columns: [
             { data: 'DT_RowIndex',    name: 'DT_RowIndex',    orderable: false, searchable: false, width: '50px' },
-            { data: 'po_number',      name: 'po_number' },
+            { data: 'purchase_number', name: 'purchase_number' },
             { data: 'vendor_col',     name: 'vendor_col',     orderable: false },
             { data: 'total_col',      name: 'total_col',      orderable: false, searchable: false },
             { data: 'payment_col',    name: 'payment_col',    orderable: false, searchable: false },

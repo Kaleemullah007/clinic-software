@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Prescription;
+use App\Models\User;
 use App\Http\Requests\StorePrescriptionRequest;
 use App\Http\Requests\UpdatePrescriptionRequest;
 use Yajra\DataTables\Facades\DataTables;
@@ -25,37 +26,55 @@ class PrescriptionController extends Controller
     public function index(\Illuminate\Http\Request $request)
     {
         if ($request->ajax()) {
-            $query = Prescription::with(['patient:id,name', 'doctor:id,name'])->latest();
+            $query = Prescription::with(['patient:id,name', 'doctor:id,name', 'appointment:id,date,name'])
+                ->leftJoin('appointments', 'prescriptions.appointment_id', '=', 'appointments.id')
+                ->select('prescriptions.*', 'appointments.date as appt_date')
+                ->when($request->filter_patient, fn($q) => $q->where('prescriptions.user_id', $request->filter_patient))
+                ->orderByDesc('appointments.date')
+                ->orderByDesc('prescriptions.created_at');
 
             return DataTables::of($query)
                 ->addIndexColumn()
-                ->addColumn('patient_col', fn (Prescription $p) =>
-                    $p->patient ? e($p->patient->name) : '<span class="text-muted">—</span>'
-                )
+                ->addColumn('patient_col', function (Prescription $p) {
+                    $name = $p->patient ? e($p->patient->name) : e($p->appointment->name ?? '—');
+                    $phone = $p->patient->phone ?? '';
+                    return '<div class="fw-semibold">' . $name . '</div>'
+                         . ($phone ? '<small class="text-muted">' . e($phone) . '</small>' : '');
+                })
                 ->addColumn('doctor_col', fn (Prescription $p) =>
                     $p->doctor ? e($p->doctor->name) : '<span class="text-muted">—</span>'
                 )
-                ->addColumn('date_col', fn (Prescription $p) =>
-                    $p->created_at?->format('d M Y') ?? '—'
+                ->addColumn('appt_date_col', fn (Prescription $p) =>
+                    $p->appt_date
+                        ? '<span class="badge bg-light text-dark border">'
+                          . \Carbon\Carbon::parse($p->appt_date)->format('d M Y')
+                          . '</span>'
+                        : '<span class="text-muted">—</span>'
                 )
                 ->addColumn('action', function (Prescription $p) {
-                    $view = route('prescription.show', $p->id)
-                        ? '<a href="' . route('prescription.show', $p->id) . '" class="btn btn-sm btn-outline-secondary me-1"><i class="bi bi-eye"></i></a>'
-                        : '';
                     $del = auth()->user()->can('delete', $p)
-                        ? '<form action="' . route('prescription.destroy', $p->id) . '" method="POST" class="d-inline"
-                               onsubmit="return confirm(\'Delete?\')">
-                               ' . csrf_field() . method_field('DELETE') . '
-                               <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash3"></i></button>
-                           </form>'
+                        ? '<button class="btn btn-sm btn-outline-danger btn-delete-prescription"
+                                  data-url="' . route('prescription.destroy', $p->id) . '"
+                                  data-token="' . csrf_token() . '">
+                               <i class="bi bi-trash3"></i></button>'
                         : '';
-                    return $view . $del;
+                    return $del;
                 })
-                ->rawColumns(['patient_col', 'doctor_col', 'action'])
+                ->filterColumn('patient_col', fn ($q, $k) =>
+                    $q->whereHas('patient', fn ($s) =>
+                        $s->where('name', 'like', "%{$k}%")->orWhere('phone', 'like', "%{$k}%")
+                    )
+                )
+                ->rawColumns(['patient_col', 'doctor_col', 'appt_date_col', 'action'])
                 ->make(true);
         }
 
-        return view('admin.prescription.index');
+        $patients = User::withCount('prescriptions')
+            ->whereNotIn('role', ['doctor', 'admin'])
+            ->orderBy('name')
+            ->get();
+
+        return view('admin.prescription.index', compact('patients'));
     }
 
     /**
@@ -131,7 +150,9 @@ class PrescriptionController extends Controller
      */
     public function destroy(Prescription $prescription)
     {
-        //
+        $this->authorize('delete', $prescription);
+        $prescription->delete();
+        return response()->json(['success' => true]);
     }
 
 

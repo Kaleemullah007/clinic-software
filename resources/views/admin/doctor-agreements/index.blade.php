@@ -15,37 +15,22 @@
         <div class="col-12">
             @include('flash-message')
             <div class="shadow-css p-3">
-                <table id="agTable" class="table table-hover w-100">
-                    <thead class="table-light">
-                        <tr><th>#</th><th>Doctor</th><th>Clinic</th><th>Service</th><th>Type</th><th>Doctor%</th><th>Clinic%</th><th>From</th><th>To</th><th>Status</th><th>Actions</th></tr>
-                    </thead>
-                    <tbody>
-                        @foreach($agreements as $i => $a)
+                <table id="doctorAgreementsTable" class="table table-hover w-100">
+                    <thead>
                         <tr>
-                            <td>{{ $i+1 }}</td>
-                            <td>{{ $a->doctor->name ?? '—' }}</td>
-                            <td>{{ $a->clinic->name ?? 'All' }}</td>
-                            <td>{{ $a->service->name ?? 'All' }}</td>
-                            <td><span class="badge bg-secondary">{{ ucfirst($a->share_type) }}</span></td>
-                            <td>{{ $a->doctor_share }}{{ $a->share_type==='percentage'?'%':' PKR' }}</td>
-                            <td>{{ $a->clinic_share }}{{ $a->share_type==='percentage'?'%':' PKR' }}</td>
-                            <td>{{ \Carbon\Carbon::parse($a->effective_from)->format('d M Y') }}</td>
-                            <td>{{ $a->effective_to ? \Carbon\Carbon::parse($a->effective_to)->format('d M Y') : 'Ongoing' }}</td>
-                            <td><span class="badge {{ $a->is_active ? 'bg-success' : 'bg-secondary' }}">{{ $a->is_active?'Active':'Inactive' }}</span></td>
-                            <td>
-                                @can('doctor-agreements.edit')
-                                <a href="{{ route('doctor-agreements.edit',$a) }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i></a>
-                                @endcan
-                                @can('doctor-agreements.delete')
-                                <form action="{{ route('doctor-agreements.destroy',$a) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete?')">
-                                    @csrf @method('DELETE')
-                                    <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
-                                </form>
-                                @endcan
-                            </td>
+                            <th>#</th>
+                            <th>Doctor</th>
+                            <th>Clinic</th>
+                            <th>Service</th>
+                            <th>Type</th>
+                            <th>Doctor Share</th>
+                            <th>Clinic Share</th>
+                            <th>From</th>
+                            <th>To</th>
+                            <th>Status</th>
+                            <th>Actions</th>
                         </tr>
-                        @endforeach
-                    </tbody>
+                    </thead>
                 </table>
             </div>
         </div>
@@ -53,6 +38,40 @@
 </div>
 @endsection
 @section('script')
-<style>.text-theme-color{color:#B1083C;}.btn-theme{background:linear-gradient(90deg,#B1083C,#d13729);color:#fff;border:none;}.shadow-css{background:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.08);}</style>
-<script>$(function(){ $('#agTable').DataTable({responsive:true,pageLength:25}); });</script>
+<style>
+    .text-theme-color{color:#B1083C;}
+    .btn-theme{background:linear-gradient(90deg,#B1083C,#d13729);color:#fff;border:none;}
+    .shadow-css{background:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.08);}
+    #doctorAgreementsTable thead th{background:#B1083C!important;color:#fff!important;border-color:#9a072f!important;white-space:nowrap;}
+    #doctorAgreementsTable thead .sorting_asc,#doctorAgreementsTable thead .sorting_desc{background:#8e0630!important;}
+</style>
+<script>
+$(function(){
+    $('#doctorAgreementsTable').DataTable({
+        serverSide: true,
+        processing: true,
+        ajax: '{{ route("doctor-agreements.index") }}',
+        columns: [
+            {data:'DT_RowIndex',         name:'DT_RowIndex',    orderable:false, searchable:false, width:'50px'},
+            {data:'doctor_name',         name:'doctor.name'},
+            {data:'clinic_name',         name:'clinic.name'},
+            {data:'service_name',        name:'service.name'},
+            {data:'share_type_badge',    name:'share_type',     orderable:true,  searchable:true},
+            {data:'doctor_share_fmt',    name:'doctor_share',   orderable:true,  searchable:false},
+            {data:'clinic_share_fmt',    name:'clinic_share',   orderable:true,  searchable:false},
+            {data:'effective_from_fmt',  name:'effective_from', orderable:true,  searchable:false},
+            {data:'effective_to_fmt',    name:'effective_to',   orderable:true,  searchable:false},
+            {data:'status_badge',        name:'is_active',      orderable:true,  searchable:false},
+            {data:'action',              name:'action',         orderable:false, searchable:false, className:'text-center'},
+        ],
+        order: [[1, 'asc']],
+        responsive: true,
+        pageLength: 15,
+        language: {
+            searchPlaceholder: 'Search...',
+            processing: '<div class="spinner-border spinner-border-sm" style="color:#B1083C"></div> Loading…'
+        },
+    });
+});
+</script>
 @endsection

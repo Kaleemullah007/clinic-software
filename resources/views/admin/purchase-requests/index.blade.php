@@ -1,5 +1,4 @@
 @extends('layouts.admin')
-
 @section('content')
 <div class="container-fluid">
     <div class="row pt-3 mx-1">
@@ -17,10 +16,12 @@
         <div class="col-12">
             @include('flash-message')
             <div class="shadow-css p-3">
-                <table id="prTable" class="table table-hover w-100">
-                    <thead class="table-light">
+                <table id="purchaseRequestsTable" class="table table-hover w-100">
+                    <thead>
                         <tr>
+                            <th>#</th>
                             <th>PR #</th>
+                            <th>Items</th>
                             <th>Requested By</th>
                             <th>Status</th>
                             <th>Approved By</th>
@@ -28,46 +29,6 @@
                             <th>Actions</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        @foreach($prs as $pr)
-                        <tr>
-                            <td><a href="{{ route('purchase-requests.show',$pr) }}" class="fw-semibold text-theme-color">{{ $pr->pr_number }}</a></td>
-                            <td>{{ $pr->requestedBy->name ?? '—' }}</td>
-                            <td>
-                                @php
-                                    $colors = ['pending'=>'warning','approved'=>'success','rejected'=>'danger','ordered'=>'info'];
-                                @endphp
-                                <span class="badge bg-{{ $colors[$pr->status] ?? 'secondary' }}">{{ ucfirst($pr->status) }}</span>
-                            </td>
-                            <td>{{ $pr->approvedBy->name ?? '—' }}</td>
-                            <td>{{ $pr->created_at->format('d M Y') }}</td>
-                            <td class="d-flex gap-1 flex-wrap">
-                                <a href="{{ route('purchase-requests.show',$pr) }}" class="btn btn-sm btn-outline-info"><i class="bi bi-eye"></i></a>
-                                @if($pr->status === 'pending')
-                                    @can('purchase-requests.edit')
-                                    <a href="{{ route('purchase-requests.edit',$pr) }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i></a>
-                                    @endcan
-                                    @can('purchase-requests.approve')
-                                    <form action="{{ route('purchase-request.approve',$pr) }}" method="POST" class="d-inline">
-                                        @csrf
-                                        <button class="btn btn-sm btn-success"><i class="bi bi-check-lg"></i> Approve</button>
-                                    </form>
-                                    <button class="btn btn-sm btn-danger" onclick="rejectPR({{ $pr->id }})"><i class="bi bi-x-lg"></i> Reject</button>
-                                    @endcan
-                                @endif
-                                @can('purchase-requests.delete')
-                                @if(in_array($pr->status,['pending','rejected']))
-                                <form action="{{ route('purchase-requests.destroy',$pr) }}" method="POST" class="d-inline"
-                                      onsubmit="return confirm('Delete this request?')">
-                                    @csrf @method('DELETE')
-                                    <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
-                                </form>
-                                @endif
-                                @endcan
-                            </td>
-                        </tr>
-                        @endforeach
-                    </tbody>
                 </table>
             </div>
         </div>
@@ -99,11 +60,37 @@
     .text-theme-color{color:#B1083C;}
     .btn-theme{background:linear-gradient(90deg,#B1083C,#d13729);color:#fff;border:none;}
     .shadow-css{background:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.08);}
+    #purchaseRequestsTable thead th{background:#B1083C!important;color:#fff!important;border-color:#9a072f!important;white-space:nowrap;}
+    #purchaseRequestsTable thead .sorting_asc,#purchaseRequestsTable thead .sorting_desc{background:#8e0630!important;}
 </style>
 <script>
-$(function(){ $('#prTable').DataTable({responsive:true,pageLength:25,order:[[4,'desc']]}); });
+$(function(){
+    $('#purchaseRequestsTable').DataTable({
+        serverSide: true,
+        processing: true,
+        ajax: '{{ route("purchase-requests.index") }}',
+        columns: [
+            {data:'DT_RowIndex', name:'DT_RowIndex', orderable:false, searchable:false, width:'50px'},
+            {data:'pr_number_link', name:'pr_number', className:'fw-semibold'},
+            {data:'items_count', name:'items_count', orderable:false, searchable:false, className:'text-center'},
+            {data:'requested_by_name', name:'requestedBy.name'},
+            {data:'status_badge', name:'status', orderable:true, searchable:true},
+            {data:'approved_by_name', name:'approvedBy.name'},
+            {data:'date', name:'created_at'},
+            {data:'action', name:'action', orderable:false, searchable:false, className:'text-center'},
+        ],
+        order: [[6, 'desc']],
+        responsive: true,
+        pageLength: 15,
+        language: {
+            searchPlaceholder: 'Search...',
+            processing: '<div class="spinner-border spinner-border-sm" style="color:#B1083C"></div> Loading…'
+        },
+    });
+});
+
 function rejectPR(id){
-    $('#rejectForm').attr('action', '/purchase-requests/'+id+'/reject');
+    $('#rejectForm').attr('action', '/purchase-requests/' + id + '/reject');
     new bootstrap.Modal(document.getElementById('rejectModal')).show();
 }
 </script>

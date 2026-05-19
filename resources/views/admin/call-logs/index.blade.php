@@ -15,45 +15,59 @@
         <div class="col-12">
             @include('flash-message')
             <div class="shadow-css p-3">
-                <table id="callTable" class="table table-hover w-100">
-                    <thead class="table-light">
-                        <tr><th>Appointment</th><th>Patient</th><th>Type</th><th>Status</th><th>Called By</th><th>Call Time</th><th>Notes</th><th>Actions</th></tr>
-                    </thead>
-                    <tbody>
-                        @foreach($logs as $log)
+                <table id="callLogsTable" class="table table-hover w-100">
+                    <thead>
                         <tr>
-                            <td>{{ $log->appointment->appointment_id ?? '—' }}</td>
-                            <td>{{ $log->patient->name ?? '—' }}</td>
-                            <td><span class="badge bg-info text-dark">{{ ucfirst(str_replace('_',' ',$log->call_type)) }}</span></td>
-                            <td>
-                                @php $scolors=['answered'=>'success','no_answer'=>'secondary','busy'=>'warning','scheduled'=>'primary']; @endphp
-                                <span class="badge bg-{{ $scolors[$log->call_status]??'secondary' }}">{{ ucfirst(str_replace('_',' ',$log->call_status)) }}</span>
-                            </td>
-                            <td>{{ $log->calledBy->name ?? '—' }}</td>
-                            <td>{{ $log->call_at ? \Carbon\Carbon::parse($log->call_at)->format('d M Y H:i') : $log->created_at->format('d M Y H:i') }}</td>
-                            <td>{{ Str::limit($log->notes,40) ?? '—' }}</td>
-                            <td>
-                                @can('call-logs.edit')
-                                <a href="{{ route('call-logs.edit',$log) }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-pencil"></i></a>
-                                @endcan
-                                @can('call-logs.delete')
-                                <form action="{{ route('call-logs.destroy',$log) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete?')">
-                                    @csrf @method('DELETE')
-                                    <button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i></button>
-                                </form>
-                                @endcan
-                            </td>
+                            <th>#</th>
+                            <th>Appointment</th>
+                            <th>Patient</th>
+                            <th>Type</th>
+                            <th>Status</th>
+                            <th>Called By</th>
+                            <th>Call Time</th>
+                            <th>Notes</th>
+                            <th>Actions</th>
                         </tr>
-                        @endforeach
-                    </tbody>
+                    </thead>
                 </table>
-                {{ $logs->links() }}
             </div>
         </div>
     </div>
 </div>
 @endsection
 @section('script')
-<style>.text-theme-color{color:#B1083C;}.btn-theme{background:linear-gradient(90deg,#B1083C,#d13729);color:#fff;border:none;}.shadow-css{background:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.08);}</style>
-<script>$(function(){ $('#callTable').DataTable({responsive:true,pageLength:25,order:[[5,'desc']],paging:false}); });</script>
+<style>
+    .text-theme-color{color:#B1083C;}
+    .btn-theme{background:linear-gradient(90deg,#B1083C,#d13729);color:#fff;border:none;}
+    .shadow-css{background:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.08);}
+    #callLogsTable thead th{background:#B1083C!important;color:#fff!important;border-color:#9a072f!important;white-space:nowrap;}
+    #callLogsTable thead .sorting_asc,#callLogsTable thead .sorting_desc{background:#8e0630!important;}
+</style>
+<script>
+$(function(){
+    $('#callLogsTable').DataTable({
+        serverSide: true,
+        processing: true,
+        ajax: '{{ route("call-logs.index") }}',
+        columns: [
+            {data:'DT_RowIndex',  name:'DT_RowIndex',       orderable:false, searchable:false, width:'50px'},
+            {data:'appointment_no',  name:'appointment.appointment_id'},
+            {data:'patient_name',    name:'patient.name'},
+            {data:'call_type_badge', name:'call_type',       orderable:true,  searchable:true},
+            {data:'call_status_badge',name:'call_status',    orderable:true,  searchable:true},
+            {data:'called_by_name',  name:'calledBy.name'},
+            {data:'call_at_fmt',     name:'call_at',         orderable:true,  searchable:false},
+            {data:'notes_short',     name:'notes',           orderable:false},
+            {data:'action',          name:'action',          orderable:false, searchable:false, className:'text-center'},
+        ],
+        order: [[6, 'desc']],
+        responsive: true,
+        pageLength: 15,
+        language: {
+            searchPlaceholder: 'Search...',
+            processing: '<div class="spinner-border spinner-border-sm" style="color:#B1083C"></div> Loading…'
+        },
+    });
+});
+</script>
 @endsection
