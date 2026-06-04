@@ -128,13 +128,198 @@
         </div>
         @endcanany
 
+        {{-- Appointments --}}
+        @canany(['reports.appointments','reports.view'])
+        <div class="col-xl-4 col-md-6 col-12">
+            <a href="{{ route('reports.appointments') }}" class="text-decoration-none">
+                <div class="rpt-card h-100">
+                    <div class="rpt-accent" style="background:linear-gradient(135deg,#B1083C,#e63368)"></div>
+                    <div class="rpt-body">
+                        <div class="rpt-icon-wrap" style="background:rgba(177,8,60,.1)">
+                            <i class="bi bi-calendar2-check" style="color:#B1083C"></i>
+                        </div>
+                        <div class="rpt-text">
+                            <h6 class="rpt-title">Appointments</h6>
+                            <p class="rpt-desc">Monthly volume, paid vs unpaid, new vs returning patients</p>
+                        </div>
+                        <div class="rpt-arrow">
+                            <i class="bi bi-arrow-right-circle-fill" style="color:#B1083C"></i>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+        @endcanany
+
+        {{-- Service Revenue --}}
+        @canany(['reports.services','reports.view'])
+        <div class="col-xl-4 col-md-6 col-12">
+            <a href="{{ route('reports.services') }}" class="text-decoration-none">
+                <div class="rpt-card h-100">
+                    <div class="rpt-accent" style="background:linear-gradient(135deg,#ec4899,#f472b6)"></div>
+                    <div class="rpt-body">
+                        <div class="rpt-icon-wrap" style="background:rgba(236,72,153,.1)">
+                            <i class="bi bi-scissors" style="color:#ec4899"></i>
+                        </div>
+                        <div class="rpt-text">
+                            <h6 class="rpt-title">Service Revenue</h6>
+                            <p class="rpt-desc">Revenue, bookings and discounts per service type</p>
+                        </div>
+                        <div class="rpt-arrow">
+                            <i class="bi bi-arrow-right-circle-fill" style="color:#ec4899"></i>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+        @endcanany
+
+        {{-- Product Gap --}}
+        @can('reports.product-gap')
+        <div class="col-xl-4 col-md-6 col-12">
+            <a href="{{ route('reports.product-gap') }}" class="text-decoration-none">
+                <div class="rpt-card h-100">
+                    <div class="rpt-accent" style="background:linear-gradient(135deg,#ef4444,#f97316)"></div>
+                    <div class="rpt-body">
+                        <div class="rpt-icon-wrap" style="background:rgba(239,68,68,.1)">
+                            <i class="bi bi-box-seam" style="color:#ef4444"></i>
+                        </div>
+                        <div class="rpt-text">
+                            <h6 class="rpt-title">Product Gap</h6>
+                            <p class="rpt-desc">Products idle in appointments, POS, or both — with stock value sitting unused</p>
+                        </div>
+                        <div class="rpt-arrow">
+                            <i class="bi bi-arrow-right-circle-fill" style="color:#ef4444"></i>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+        @endcan
+
+        {{-- Service Gap --}}
+        @can('reports.service-gap')
+        <div class="col-xl-4 col-md-6 col-12">
+            <a href="{{ route('reports.service-gap') }}" class="text-decoration-none">
+                <div class="rpt-card h-100">
+                    <div class="rpt-accent" style="background:linear-gradient(135deg,#B1083C,#7c3aed)"></div>
+                    <div class="rpt-body">
+                        <div class="rpt-icon-wrap" style="background:rgba(177,8,60,.1)">
+                            <i class="bi bi-search-heart" style="color:#B1083C"></i>
+                        </div>
+                        <div class="rpt-text">
+                            <h6 class="rpt-title">Service Gap</h6>
+                            <p class="rpt-desc">Top performing services vs unused/dormant — spot gaps by clinic or doctor</p>
+                        </div>
+                        <div class="rpt-arrow">
+                            <i class="bi bi-arrow-right-circle-fill" style="color:#B1083C"></i>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+        @endcan
+
+        {{-- Patients --}}
+        @canany(['reports.patients','reports.view'])
+        <div class="col-xl-4 col-md-6 col-12">
+            <a href="{{ route('reports.patients') }}" class="text-decoration-none">
+                <div class="rpt-card h-100">
+                    <div class="rpt-accent" style="background:linear-gradient(135deg,#06b6d4,#22d3ee)"></div>
+                    <div class="rpt-body">
+                        <div class="rpt-icon-wrap" style="background:rgba(6,182,212,.1)">
+                            <i class="bi bi-people" style="color:#06b6d4"></i>
+                        </div>
+                        <div class="rpt-text">
+                            <h6 class="rpt-title">Patients</h6>
+                            <p class="rpt-desc">Top spenders, new vs returning, retention & inactive</p>
+                        </div>
+                        <div class="rpt-arrow">
+                            <i class="bi bi-arrow-right-circle-fill" style="color:#06b6d4"></i>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+        @endcanany
+
+        {{-- Products Sold --}}
+        @canany(['reports.products-sold','reports.view'])
+        <div class="col-xl-4 col-md-6 col-12">
+            <a href="{{ route('reports.products-sold') }}" class="text-decoration-none">
+                <div class="rpt-card h-100">
+                    <div class="rpt-accent" style="background:linear-gradient(135deg,#f97316,#fb923c)"></div>
+                    <div class="rpt-body">
+                        <div class="rpt-icon-wrap" style="background:rgba(249,115,22,.1)">
+                            <i class="bi bi-bag-check" style="color:#f97316"></i>
+                        </div>
+                        <div class="rpt-text">
+                            <h6 class="rpt-title">Products Sold</h6>
+                            <p class="rpt-desc">Units sold, revenue, returns and return rate per product</p>
+                        </div>
+                        <div class="rpt-arrow">
+                            <i class="bi bi-arrow-right-circle-fill" style="color:#f97316"></i>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+        @endcanany
+
+        {{-- POS Report --}}
+        @canany(['pos.view','reports.view'])
+        <div class="col-xl-4 col-md-6 col-12">
+            <a href="{{ route('pos.report') }}" class="text-decoration-none">
+                <div class="rpt-card h-100">
+                    <div class="rpt-accent" style="background:linear-gradient(135deg,#B1083C,#d13729)"></div>
+                    <div class="rpt-body">
+                        <div class="rpt-icon-wrap" style="background:rgba(177,8,60,.1)">
+                            <i class="bi bi-shop" style="color:#B1083C"></i>
+                        </div>
+                        <div class="rpt-text">
+                            <h6 class="rpt-title">POS Report</h6>
+                            <p class="rpt-desc">Point-of-sale revenue, product breakdown and daily trends</p>
+                        </div>
+                        <div class="rpt-arrow">
+                            <i class="bi bi-arrow-right-circle-fill" style="color:#B1083C"></i>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+        @endcanany
+
+        {{-- P&L Summary --}}
+        @canany(['reports.view'])
+        <div class="col-xl-4 col-md-6 col-12">
+            <a href="{{ route('reports.summary') }}" class="text-decoration-none">
+                <div class="rpt-card h-100">
+                    <div class="rpt-accent" style="background:linear-gradient(135deg,#10b981,#34d399)"></div>
+                    <div class="rpt-body">
+                        <div class="rpt-icon-wrap" style="background:rgba(16,185,129,.1)">
+                            <i class="bi bi-graph-up-arrow" style="color:#10b981"></i>
+                        </div>
+                        <div class="rpt-text">
+                            <h6 class="rpt-title">P&amp;L Summary</h6>
+                            <p class="rpt-desc">Total income vs expenses, net profit and monthly trend</p>
+                        </div>
+                        <div class="rpt-arrow">
+                            <i class="bi bi-arrow-right-circle-fill" style="color:#10b981"></i>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+        @endcanany
+
     </div>
 
     {{-- No access fallback --}}
     @php
         $hasAny = auth()->user()->canAny([
             'reports.view','reports.revenue','reports.expenses',
-            'reports.inventory','reports.salaries','reports.doctor-performance'
+            'reports.inventory','reports.salaries','reports.doctor-performance',
+            'reports.appointments','reports.services','reports.patients','reports.products-sold',
         ]);
     @endphp
     @if(!$hasAny)

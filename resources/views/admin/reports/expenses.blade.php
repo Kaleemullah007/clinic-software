@@ -10,21 +10,55 @@
         <hr class="my-2">
     </div>
     <div class="row mx-1 mb-3">
-        <div class="col-lg-4">
-            <form method="GET" class="d-flex gap-2">
-                <select name="year" class="form-select border-secondary form-select-sm">
-                    @for($y=now()->year;$y>=now()->year-3;$y--)
-                    <option value="{{ $y }}" {{ $year==$y?'selected':'' }}>{{ $y }}</option>
-                    @endfor
-                </select>
-                <select name="month" class="form-select border-secondary form-select-sm">
-                    <option value="">All Months</option>
-                    @for($m=1;$m<=12;$m++)
-                    <option value="{{ $m }}" {{ $month==$m?'selected':'' }}>{{ \Carbon\Carbon::create(null,$m)->format('F') }}</option>
-                    @endfor
-                </select>
-                <button class="btn btn-theme btn-sm">Filter</button>
+        <div class="col-12">
+            <form method="GET" class="d-flex flex-wrap gap-2 align-items-end">
+                <div>
+                    <label class="form-label small text-muted mb-1">Year</label>
+                    <select name="year" class="form-select border-secondary form-select-sm" style="width:100px">
+                        @for($y=now()->year;$y>=now()->year-3;$y--)
+                        <option value="{{ $y }}" {{ $year==$y?'selected':'' }}>{{ $y }}</option>
+                        @endfor
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label small text-muted mb-1">Month</label>
+                    <select name="month" class="form-select border-secondary form-select-sm" style="width:130px">
+                        <option value="">All Months</option>
+                        @for($m=1;$m<=12;$m++)
+                        <option value="{{ $m }}" {{ $month==$m?'selected':'' }}>{{ \Carbon\Carbon::create(null,$m)->format('F') }}</option>
+                        @endfor
+                    </select>
+                </div>
+                @if(auth()->user()->isSuperAdmin())
+                <div>
+                    <label class="form-label small text-muted mb-1">Clinic</label>
+                    <select name="clinic_id" class="form-select border-secondary form-select-sm" style="width:160px">
+                        <option value="">All Clinics</option>
+                        @foreach($clinics as $c)
+                        <option value="{{ $c->id }}" {{ ($clinicId ?? '') == $c->id ? 'selected' : '' }}>{{ $c->name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                @endif
+                <div class="align-self-end">
+                    <button class="btn btn-theme btn-sm"><i class="bi bi-funnel me-1"></i>Filter</button>
+                </div>
             </form>
+        </div>
+    </div>
+
+    {{-- Grand Total Card --}}
+    <div class="row mx-1 mb-3">
+        <div class="col-lg-4 col-md-6 col-12">
+            <div class="shadow-css p-3 d-flex align-items-center gap-3">
+                <div style="width:44px;height:44px;border-radius:50%;background:rgba(177,8,60,.1);display:flex;align-items:center;justify-content:center">
+                    <i class="bi bi-cash-stack" style="color:#B1083C;font-size:1.2rem"></i>
+                </div>
+                <div>
+                    <div class="fw-bold" style="font-size:1.15rem;color:#B1083C">PKR {{ number_format($grandTotal, 0) }}</div>
+                    <div class="small text-muted">Total Expenses{{ ($clinicId ?? '') ? ' — ' . ($clinics->firstWhere('id', $clinicId)?->name ?? '') : '' }}</div>
+                </div>
+            </div>
         </div>
     </div>
     <div class="row mx-1 mb-4">

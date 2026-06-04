@@ -22,6 +22,11 @@ class User extends Authenticatable implements MustVerifyEmail
         'status',
         'phone',
         'avatar',
+        'clinic_id',
+        'country_id',
+        'state_id',
+        'city_id',
+        'shipping_address',
     ];
 
     protected $hidden = [
@@ -32,6 +37,11 @@ class User extends Authenticatable implements MustVerifyEmail
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    public function clinic()
+    {
+        return $this->belongsTo(Clinic::class);
+    }
 
     public function isSuperAdmin(): bool
     {
@@ -51,5 +61,26 @@ class User extends Authenticatable implements MustVerifyEmail
     public function importLogs(): HasMany
     {
         return $this->hasMany(\App\Models\ImportLog::class, 'uploaded_by');
+    }
+
+    public function country()
+    {
+        return $this->belongsTo(Country::class);
+    }
+
+    public function state()
+    {
+        return $this->belongsTo(State::class);
+    }
+
+    public function city()
+    {
+        return $this->belongsTo(City::class);
+    }
+
+    /* ── currency helper (falls back to clinic currency or PKR) ── */
+    public function getCurrencyAttribute(): string
+    {
+        return $this->clinic?->currency ?? 'PKR ';
     }
 }

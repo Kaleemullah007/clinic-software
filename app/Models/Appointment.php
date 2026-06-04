@@ -74,4 +74,10 @@ class Appointment extends Model
     {
         return $this->hasMany(AppointmentReturn::class);
     }
+
+    /** WhatsApp receipt send log */
+    public function whatsappLogs()
+    {
+        return $this->hasMany(WhatsappLog::class);
+    }
 }

@@ -74,7 +74,7 @@ Route::get('new-enteries',[ScrappingController::class,'addSales'])->name('new-en
 
 
 Route::group([
-    'middleware' => ['avoid-back-history', 'auth'],
+    'middleware' => ['avoid-back-history', 'auth', 'check-device'],
 ], function () {
 
     // Dashboard
@@ -88,6 +88,13 @@ Route::group([
     Route::get('get-detail', [AppointmentController::class, 'getcategory']);
     Route::get('generate-pdf/{id}', [AppointmentController::class, 'generatePDF'])->name('generate-pdf');
     Route::resource('appointments', AppointmentController::class);
+    Route::post('appointments/{appointment}/toggle-payment', [AppointmentController::class, 'togglePayment'])->name('appointments.toggle-payment');
+    // Doctor service management on appointment
+    Route::get('appointments/{appointment}/services', [AppointmentController::class, 'getServices'])->name('appointments.services.get');
+    Route::post('appointments/{appointment}/services', [AppointmentController::class, 'addService'])->name('appointments.services.add');
+    Route::put('appointments/{appointment}/services/{service}', [AppointmentController::class, 'updateService'])->name('appointments.services.update');
+    Route::delete('appointments/{appointment}/services/{service}', [AppointmentController::class, 'deleteService'])->name('appointments.services.delete');
+    Route::patch('appointments/{appointment}/discount', [AppointmentController::class, 'updateDiscount'])->name('appointments.discount.update');
 
     // Services / Categories
     Route::get('get-price/{category}', [CategoryController::class, 'getPrice']);
@@ -96,7 +103,10 @@ Route::group([
     // Users
     Route::get('updateprofile/{user}/edit', [UserController::class, 'showProfile']);
     Route::put('updateprofile', [UserController::class, 'updateProfile'])->name('users.updateprofile');
+    Route::get('users/stop-acting',          [UserController::class, 'stopActing'])->name('users.stop-acting');
     Route::resource('users', UserController::class);
+    Route::get('users/{user}/act-as',        [UserController::class, 'actAs'])->name('users.act-as');
+    Route::post('users/{user}/toggle-status',[UserController::class, 'toggleStatus'])->name('users.toggle-status');
 
     // Roles & Permissions (super-admin only via controller middleware)
     Route::resource('role', RoleController::class);
@@ -107,6 +117,7 @@ Route::group([
     Route::get('add-new-row', [SettingController::class, 'addNewRow']);
     Route::resource('settings', SettingController::class);
     Route::resource('prescription', PrescriptionController::class);
+    Route::get('prescriptions/patient/{userId}', [\App\Http\Controllers\PrescriptionController::class, 'getPatientRecords'])->name('prescription.patient-records');
     Route::resource('businesshour', BusinessHourController::class);
     Route::resource('contacts', ContactController::class);
     Route::resource('blogger', BlogController::class);
@@ -190,6 +201,56 @@ Route::group([
         Route::delete('/{importLog}',                            [\App\Http\Controllers\ImportController::class, 'destroy'])->name('destroy');
     });
 
+    // ── WhatsApp ─────────────────────────────────────────────────────────
+    Route::post('appointments/{appointment}/send-whatsapp-receipt', [\App\Http\Controllers\WhatsappController::class, 'send'])->name('whatsapp.send');
+    Route::get('whatsapp-logs', [\App\Http\Controllers\WhatsappController::class, 'index'])->name('whatsapp.logs');
+
+    // ── WhatsApp Campaign ────────────────────────────────────────────────
+    Route::prefix('whatsapp-campaign')->name('whatsapp-campaign.')->group(function () {
+        // Campaigns
+        Route::get('/',              [\App\Http\Controllers\WhatsappCampaignController::class, 'index'])->name('index');
+        Route::get('/create',        [\App\Http\Controllers\WhatsappCampaignController::class, 'create'])->name('create');
+        Route::post('/',             [\App\Http\Controllers\WhatsappCampaignController::class, 'store'])->name('store');
+        Route::get('/{whatsappCampaign}',        [\App\Http\Controllers\WhatsappCampaignController::class, 'show'])->name('show');
+        Route::delete('/{whatsappCampaign}',     [\App\Http\Controllers\WhatsappCampaignController::class, 'destroy'])->name('destroy');
+        // Templates
+        Route::get('/templates/list',   [\App\Http\Controllers\WhatsappCampaignController::class, 'templatesIndex'])->name('templates');
+        Route::get('/templates/create', [\App\Http\Controllers\WhatsappCampaignController::class, 'templatesCreate'])->name('templates.create');
+        Route::post('/templates',       [\App\Http\Controllers\WhatsappCampaignController::class, 'templatesStore'])->name('templates.store');
+        Route::get('/templates/{template}/edit', [\App\Http\Controllers\WhatsappCampaignController::class, 'templatesEdit'])->name('templates.edit');
+        Route::put('/templates/{template}',      [\App\Http\Controllers\WhatsappCampaignController::class, 'templatesUpdate'])->name('templates.update');
+        Route::delete('/templates/{template}',   [\App\Http\Controllers\WhatsappCampaignController::class, 'templatesDestroy'])->name('templates.destroy');
+    });
+
+    // ── Staff ID Cards ───────────────────────────────────────────────────
+    Route::get('staff-id-cards', [\App\Http\Controllers\StaffIdCardController::class, 'index'])->name('staff-id-cards.index');
+    Route::get('staff-id-cards/users', [\App\Http\Controllers\StaffIdCardController::class, 'getUsers'])->name('staff-id-cards.users');
+
+    // ── Call Manager ─────────────────────────────────────────────────────
+    Route::get('call-manager', [\App\Http\Controllers\CallManagerController::class, 'index'])->name('call-manager.index');
+    Route::get('call-manager/notes/{appointment}', [\App\Http\Controllers\CallManagerController::class, 'getNotes'])->name('call-manager.notes.get');
+    Route::post('call-manager/notes', [\App\Http\Controllers\CallManagerController::class, 'saveNote'])->name('call-manager.notes.save');
+    Route::put('call-manager/notes/{log}', [\App\Http\Controllers\CallManagerController::class, 'updateNote'])->name('call-manager.notes.update');
+
+    // ── Point of Sale ────────────────────────────────────────────────
+    Route::prefix('pos')->name('pos.')->group(function () {
+        Route::get('/',                   [\App\Http\Controllers\PosController::class, 'index'])->name('index');
+        Route::get('/create',             [\App\Http\Controllers\PosController::class, 'create'])->name('create');
+        Route::post('/',                  [\App\Http\Controllers\PosController::class, 'store'])->name('store');
+        Route::get('/report',             [\App\Http\Controllers\PosController::class, 'report'])->name('report');
+        Route::get('/products/search',    [\App\Http\Controllers\PosController::class, 'getProducts'])->name('products');
+        Route::get('/patients/search',    [\App\Http\Controllers\PosController::class, 'searchPatients'])->name('patients.search');
+        Route::post('/patients',          [\App\Http\Controllers\PosController::class, 'quickCreatePatient'])->name('patients.store');
+        Route::get('/load-order',         [\App\Http\Controllers\PosController::class, 'loadOrder'])->name('load-order');
+        Route::get('/states',             [\App\Http\Controllers\PosController::class, 'getStates'])->name('states');
+        Route::get('/cities',             [\App\Http\Controllers\PosController::class, 'getCities'])->name('cities');
+        Route::get('/{pos}/edit',         [\App\Http\Controllers\PosController::class, 'edit'])->name('edit');
+        Route::put('/{pos}',              [\App\Http\Controllers\PosController::class, 'update'])->name('update');
+        Route::get('/{pos}',              [\App\Http\Controllers\PosController::class, 'show'])->name('show');
+        Route::delete('/{pos}',           [\App\Http\Controllers\PosController::class, 'destroy'])->name('destroy');
+        Route::post('/{pos}/toggle-payment', [\App\Http\Controllers\PosController::class, 'togglePayment'])->name('toggle-payment');
+    });
+
     // ── Reports ──────────────────────────────────────────────────────────
     Route::get('reports', [\App\Http\Controllers\ReportController::class, 'index'])->name('reports.index');
     Route::get('reports/revenue', [\App\Http\Controllers\ReportController::class, 'revenue'])->name('reports.revenue');
@@ -197,8 +258,29 @@ Route::group([
     Route::get('reports/expenses', [\App\Http\Controllers\ReportController::class, 'expenses'])->name('reports.expenses');
     Route::get('reports/salaries', [\App\Http\Controllers\ReportController::class, 'salaries'])->name('reports.salaries');
     Route::get('reports/doctor-performance', [\App\Http\Controllers\ReportController::class, 'doctorPerformance'])->name('reports.doctor-performance');
+    Route::get('reports/appointments',   [\App\Http\Controllers\ReportController::class, 'appointmentsReport'])->name('reports.appointments');
+    Route::get('reports/services',       [\App\Http\Controllers\ReportController::class, 'serviceRevenue'])->name('reports.services');
+    Route::get('reports/patients',       [\App\Http\Controllers\ReportController::class, 'patients'])->name('reports.patients');
+    Route::get('reports/products-sold',  [\App\Http\Controllers\ReportController::class, 'productsSold'])->name('reports.products-sold');
+    Route::get('reports/summary',        [\App\Http\Controllers\ReportController::class, 'summary'])->name('reports.summary');
+    Route::get('reports/service-gap',    [\App\Http\Controllers\ReportController::class, 'serviceGap'])->name('reports.service-gap');
+    Route::get('reports/product-gap',    [\App\Http\Controllers\ReportController::class, 'productGap'])->name('reports.product-gap');
+
+    // ── Device Approvals (superadmin only) ───────────────────────────────
+    Route::prefix('device-approvals')->group(function () {
+        Route::get('/',                [\App\Http\Controllers\DeviceApprovalController::class, 'index'])->name('device-approvals.index');
+        Route::get('/data',            [\App\Http\Controllers\DeviceApprovalController::class, 'data'])->name('device-approvals.data');
+        Route::post('/{id}/approve',   [\App\Http\Controllers\DeviceApprovalController::class, 'approve'])->name('device-approvals.approve');
+        Route::post('/{id}/reject',    [\App\Http\Controllers\DeviceApprovalController::class, 'reject'])->name('device-approvals.reject');
+        Route::post('/{id}/revoke',    [\App\Http\Controllers\DeviceApprovalController::class, 'revoke'])->name('device-approvals.revoke');
+        Route::post('/toggle-setting', [\App\Http\Controllers\DeviceApprovalController::class, 'toggleSetting'])->name('device-approvals.toggle-setting');
+    });
 
 });
+
+// ── Device pending page (no auth required) ────────────────────────────────
+Route::get('/device/pending',  [\App\Http\Controllers\DeviceApprovalController::class, 'pendingPage'])->name('device.pending');
+Route::get('/device/check',    [\App\Http\Controllers\DeviceApprovalController::class, 'checkStatus'])->name('device.check');
 
 
 
@@ -208,7 +290,7 @@ Route::group([
 Route::get('/', function () {
     // return view('welcome');
     return to_route('login');
-})->name('home');
+});
 
 Route::get('/image', function () {
     return view('image');

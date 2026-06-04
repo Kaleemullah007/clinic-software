@@ -44,6 +44,11 @@ class Product extends Model
         return $this->hasMany(AppointmentProduct::class);
     }
 
+    public function posItems()
+    {
+        return $this->hasMany(PosOrderItem::class);
+    }
+
     public function getStockAttribute(): float
     {
         return $this->inventory?->quantity ?? 0;

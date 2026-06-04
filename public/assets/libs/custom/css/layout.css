@@ -244,9 +244,9 @@
         height: 97vh;
         width: 240px;
         position: fixed;
+        z-index: 1030;
         box-shadow: 3px -1px 10px 1px #efeeee;
         overflow-y: scroll;
-        transition: .5s;
         margin-top: 11px;
         padding-bottom: 20px;
         background-color: var(--white-color);

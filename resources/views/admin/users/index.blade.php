@@ -46,8 +46,9 @@
     #users-table thead th { background:linear-gradient(90deg,#B1083C 0%,#d13729 100%); color:#fff; border:none; }
 </style>
 <script>
+var usersTable;
 $(function () {
-    $('#users-table').DataTable({
+    usersTable = $('#users-table').DataTable({
         serverSide: true,
         processing: true,
         ajax: '{{ route("users.index") }}',
@@ -62,6 +63,55 @@ $(function () {
         responsive: true,
         pageLength: 15,
         language: { searchPlaceholder: 'Search users…', processing: '<div class="spinner-border spinner-border-sm text-danger"></div> Loading…' },
+    });
+});
+
+// ── Status toggle with SweetAlert2 confirmation ────────────────────────────
+$(document).on('click', '.btn-toggle-status', function () {
+    var btn    = $(this);
+    var id     = btn.data('id');
+    var name   = btn.data('name');
+    var active = parseInt(btn.data('status'));
+    var url    = btn.data('url');
+    var action = active ? 'Deactivate' : 'Activate';
+    var icon   = active ? 'warning' : 'question';
+    var color  = active ? '#ef4444'  : '#10b981';
+
+    Swal.fire({
+        title: action + ' user?',
+        html: 'Are you sure you want to <strong>' + action.toLowerCase() + '</strong> <strong>' + name + '</strong>?',
+        icon: icon,
+        showCancelButton: true,
+        confirmButtonColor: color,
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: '<i class="bi bi-toggle-' + (active ? 'off' : 'on') + ' me-1"></i>' + action,
+        cancelButtonText: 'Cancel',
+    }).then(function (result) {
+        if (!result.isConfirmed) return;
+
+        fetch(url, {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Accept': 'application/json',
+            }
+        })
+        .then(r => r.json())
+        .then(data => {
+            if (data.status === 'success') {
+                Swal.fire({
+                    icon: 'success',
+                    title: data.message,
+                    toast: true,
+                    position: 'top-end',
+                    showConfirmButton: false,
+                    timer: 2500,
+                    timerProgressBar: true,
+                });
+                usersTable.ajax.reload(null, false);
+            }
+        })
+        .catch(() => Swal.fire({ icon:'error', title:'Request failed.', toast:true, position:'top-end', showConfirmButton:false, timer:2500 }));
     });
 });
 </script>

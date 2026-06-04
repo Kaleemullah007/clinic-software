@@ -10,6 +10,7 @@ use App\Models\Prescription;
 use App\Models\Product;
 use App\Models\Setting;
 use App\Models\User;
+use App\Models\WhatsappLog;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -133,6 +134,10 @@ class HomeController extends Controller
             }
         }
 
+        // ── WhatsApp stats ────────────────────────────────────────────────────
+        $waSentToday     = WhatsappLog::sent()->today()->count();
+        $waSentThisMonth = WhatsappLog::sent()->thisMonth()->count();
+
         // ── Dropdowns ─────────────────────────────────────────────────────────
         $clinics = Clinic::orderBy('name')->get(['id', 'name']);
         $doctors = $user->isSuperAdmin()
@@ -147,7 +152,8 @@ class HomeController extends Controller
             'latestAppointments',
             'doctorChartData', 'timeLabels', 'timeValues',
             'clinics', 'doctors',
-            'dateFrom', 'dateTo', 'period'
+            'dateFrom', 'dateTo', 'period',
+            'waSentToday', 'waSentThisMonth'
         ));
     }
 

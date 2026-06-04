@@ -11,6 +11,7 @@ class Category extends Model
     protected $fillable = [
         'name',
         'price',
+        'benchmark_price',
         // 'url',
         // 'slug',
         'status',

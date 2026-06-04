@@ -68,26 +68,36 @@ class AppointmentController extends Controller
                     $services = $a->appointmentService;
                     if (!$services || $services->isEmpty()) return '<span class="text-muted">—</span>';
                     return $services->map(fn ($s) =>
-                        '<span class="badge bg-light text-dark border">' . e($s->service_name) . '</span>'
-                    )->implode(' ');
+                        '<div style="line-height:1.6;">'
+                        . e($s->name)
+                        . ' <span style="color:#B1083C;font-weight:600;">PKR ' . number_format($s->discounted_price ?? $s->price, 0) . '</span>'
+                        . '</div>'
+                    )->implode('');
                 })
                 ->addColumn('amount_col', fn (Appointment $a) =>
                     'PKR ' . number_format($a->subtotal_discounted_price_after_discount ?? 0, 0)
                 )
-                ->addColumn('paid_col', fn (Appointment $a) =>
-                    $a->is_paid === 'paid'
-                        ? '<span class="badge bg-success">Paid</span>'
-                        : '<span class="badge bg-warning text-dark">Unpaid</span>'
-                )
+                ->addColumn('paid_col', function (Appointment $a) {
+                    $isPaid  = $a->is_paid === 'paid';
+                    $label   = $isPaid ? 'Paid' : 'Unpaid';
+                    $class   = $isPaid ? 'badge bg-success btn-toggle-payment' : 'badge bg-warning text-dark btn-toggle-payment';
+                    $title   = $isPaid ? 'Click to mark as Unpaid' : 'Click to mark as Paid';
+                    return '<span class="' . $class . '" style="cursor:pointer;" '
+                        . 'data-id="' . $a->id . '" '
+                        . 'data-status="' . $a->is_paid . '" '
+                        . 'title="' . $title . '">'
+                        . $label . '</span>';
+                })
                 ->addColumn('action', function (Appointment $a) {
                     $view = '<a href="' . route('appointments.show', $a->id) . '" class="btn btn-sm btn-outline-secondary me-1" title="View Receipt">
                                 <i class="bi bi-eye"></i></a>';
                     $addProducts = '<a href="' . route('appointment-products.create') . '?appointment_id=' . $a->id . '" class="btn btn-sm btn-outline-primary me-1" title="Add Products">
                                 <i class="bi bi-bag-plus"></i></a>';
-                    $prescription = '<button type="button" class="btn btn-sm btn-outline-info me-1" title="Add Prescription"
-                                data-bs-toggle="modal" data-bs-target="#prescriptionModal"
+                    $prescription = '<button type="button" class="btn btn-sm btn-outline-info me-1" title="Prescriptions &amp; Notes"
+                                data-bs-toggle="modal" data-bs-target="#patientRecordsModal"
                                 data-appointment-id="' . $a->id . '"
-                                data-user-id="' . $a->user_id . '">
+                                data-user-id="' . $a->user_id . '"
+                                data-patient-name="' . e($a->customer->name ?? $a->name ?? '') . '">
                                 <i class="bi bi-capsule"></i></button>';
                     $edit = auth()->user()->can('update', $a)
                         ? '<a href="' . route('appointments.edit', $a->id) . '" class="btn btn-sm btn-outline-theme me-1" title="Edit">
@@ -97,10 +107,39 @@ class AppointmentController extends Controller
                         ? '<form action="' . route('appointments.destroy', $a->id) . '" method="POST" class="d-inline"
                                onsubmit="return confirm(\'Delete?\')">
                                ' . csrf_field() . method_field('DELETE') . '
-                               <button class="btn btn-sm btn-outline-danger" title="Delete"><i class="bi bi-trash3"></i></button>
+                               <button class="btn btn-sm btn-outline-danger me-1" title="Delete"><i class="bi bi-trash3"></i></button>
                            </form>'
                         : '';
-                    return $view . $addProducts . $prescription . $edit . $del;
+
+                    // ── WhatsApp receipt button ───────────────────────────
+                    $wa = '';
+                    if (auth()->user()->can('whatsapp.send')) {
+                        $isSuperAdmin  = auth()->user()->isSuperAdmin();
+                        $alreadySent   = !is_null($a->whatsapp_sent_at);
+                        $canSend       = $isSuperAdmin || !$alreadySent;
+                        $sentLabel     = $alreadySent
+                            ? 'Sent ' . \Carbon\Carbon::parse($a->whatsapp_sent_at)->format('d M')
+                            : 'Send Receipt';
+
+                        if ($canSend) {
+                            $wa = '<button type="button"
+                                       class="btn btn-sm btn-wa btn-wa-send"
+                                       data-id="' . $a->id . '"
+                                       data-token="' . csrf_token() . '"
+                                       title="' . ($alreadySent ? 'Re-send WhatsApp Receipt' : 'Send WhatsApp Receipt') . '">
+                                       <i class="bi bi-whatsapp"></i>
+                                   </button>';
+                        } else {
+                            $wa = '<button type="button"
+                                       class="btn btn-sm btn-outline-secondary"
+                                       disabled
+                                       title="' . $sentLabel . '">
+                                       <i class="bi bi-whatsapp me-1"></i><small>' . $sentLabel . '</small>
+                                   </button>';
+                        }
+                    }
+
+                    return $view . $addProducts . $prescription . $edit . $del . $wa;
                 })
                 ->filterColumn('patient_col', fn ($q, $k) =>
                     $q->where(fn ($s) =>
@@ -116,6 +155,139 @@ class AppointmentController extends Controller
         $patients   = User::withCount('appointments')->whereNotIn('role', ['doctor', 'admin'])->get();
 
         return view('admin.appointments.index', compact('availables', 'services', 'patients'));
+    }
+
+    /* ══════════════════════════════════════════════════════════════════════
+       TOGGLE PAYMENT STATUS  —  POST appointments/{appointment}/toggle-payment
+    ══════════════════════════════════════════════════════════════════════ */
+    public function togglePayment(Appointment $appointment)
+    {
+        abort_unless(auth()->user()->can('update', $appointment), 403);
+
+        $newStatus = $appointment->is_paid === 'paid' ? 'unpaid' : 'paid';
+        $appointment->update(['is_paid' => $newStatus]);
+
+        return response()->json([
+            'success' => true,
+            'is_paid' => $newStatus,
+            'label'   => $newStatus === 'paid' ? 'Paid' : 'Unpaid',
+        ]);
+    }
+
+    /* ══════════════════════════════════════════════════════════════════════
+       DOCTOR SERVICE MANAGEMENT  —  AJAX endpoints
+    ══════════════════════════════════════════════════════════════════════ */
+
+    /** GET services + categories with benchmark_price for the service modal */
+    public function getServices(Appointment $appointment)
+    {
+        $services = $appointment->appointmentService()->with('category:id,name,benchmark_price')->get()
+            ->map(fn($s) => [
+                'id'              => $s->id,
+                'name'            => $s->name,
+                'price'           => $s->price,
+                'discounted_price'=> $s->discounted_price,
+                'discount'        => $s->discount,
+                'service_id'      => $s->service_id,
+                'benchmark_price' => $s->category?->benchmark_price,
+            ]);
+
+        $categories = Category::where('status', 1)->orderBy('name')
+            ->get(['id','name','price','benchmark_price']);
+
+        return response()->json([
+            'services'   => $services,
+            'categories' => $categories,
+            'discount'   => $appointment->discount ?? 0,
+        ]);
+    }
+
+    /** POST add new service to appointment */
+    public function addService(Request $request, Appointment $appointment)
+    {
+        abort_unless(auth()->user()->can('update', $appointment), 403);
+
+        $request->validate([
+            'service_id' => 'required|exists:categories,id',
+            'price'      => 'required|numeric|min:0',
+            'discount'   => 'nullable|numeric|min:0',
+        ]);
+
+        $category        = Category::findOrFail($request->service_id);
+        $price           = (float) $request->price;
+        $discount        = (float) ($request->discount ?? 0);
+        $discountedPrice = max(0, $price - $discount);
+
+        $service = AppointmentService::create([
+            'appointment_id'  => $appointment->id,
+            'service_id'      => $category->id,
+            'name'            => $category->name,
+            'price'           => $price,
+            'discount'        => $discount,
+            'discounted_price'=> $discountedPrice,
+        ]);
+
+        $this->recalcAppointmentTotal($appointment);
+
+        return response()->json(['success' => true, 'service' => $service]);
+    }
+
+    /** PUT update existing service price/discount */
+    public function updateService(Request $request, Appointment $appointment, AppointmentService $service)
+    {
+        abort_unless(auth()->user()->can('update', $appointment), 403);
+        abort_unless($service->appointment_id === $appointment->id, 403);
+
+        $request->validate([
+            'price'    => 'required|numeric|min:0',
+            'discount' => 'nullable|numeric|min:0',
+        ]);
+
+        $price           = (float) $request->price;
+        $discount        = (float) ($request->discount ?? 0);
+        $discountedPrice = max(0, $price - $discount);
+
+        $service->update([
+            'price'           => $price,
+            'discount'        => $discount,
+            'discounted_price'=> $discountedPrice,
+        ]);
+
+        $this->recalcAppointmentTotal($appointment);
+
+        return response()->json(['success' => true]);
+    }
+
+    /** DELETE remove a service from appointment */
+    public function deleteService(Appointment $appointment, AppointmentService $service)
+    {
+        abort_unless(auth()->user()->can('update', $appointment), 403);
+        abort_unless($service->appointment_id === $appointment->id, 403);
+
+        $service->delete();
+        $this->recalcAppointmentTotal($appointment);
+
+        return response()->json(['success' => true]);
+    }
+
+    /** PATCH update appointment-level manual discount */
+    public function updateDiscount(Request $request, Appointment $appointment)
+    {
+        abort_unless(auth()->user()->can('update', $appointment), 403);
+
+        $request->validate(['discount' => 'required|numeric|min:0']);
+        $appointment->update(['discount' => $request->discount]);
+        $this->recalcAppointmentTotal($appointment);
+
+        return response()->json(['success' => true]);
+    }
+
+    /** Recalculate appointment total_price from its services */
+    private function recalcAppointmentTotal(Appointment $appointment): void
+    {
+        $total = $appointment->appointmentService()->sum('discounted_price');
+        $discount = (float) ($appointment->discount ?? 0);
+        $appointment->update(['total_price' => max(0, $total - $discount)]);
     }
 
     public function UpdatePatientHistory(Request $request){
@@ -618,32 +790,31 @@ class AppointmentController extends Controller
     }
 
 
-           /**
-     * Update Services.
-     *
-     * @param  \App\Models\Setting  $setting
-     * @return \Illuminate\Http\Response
-     */
-    public function UpdateService(Request $request)
-    {
-        $new_row = $request->new_row;
-        $totalrecords = $request->totalrecords;
-        $services  = $request->services;
-        $add_services  = $request->services;
-        $services = Category::whereNotIn('id',array_values($services))->get();
-        $html = view('admin.appointments.services_dropdown',compact('new_row','totalrecords','services','add_services'))->render();
-        return $html;
+    public function generatePDF($id){
+        $appointment = Appointment::with([
+            'appointmentService', 'products.product', 'products.variation',
+            'patient', 'customer', 'doctor',
+        ])->findOrFail($id);
 
+        $view     = self::resolveReceiptView();
+        $pdf      = Pdf::loadView($view, compact('appointment'));
+        $filename = ($appointment->serial_series ?? $appointment->id) . '-' . ($appointment->customer->name ?? 'receipt') . '.pdf';
+
+        return $pdf->download($filename);
     }
 
-
-
-    public function generatePDF($id){
-        $appointment = Appointment::with(['customer'])
-        ->whereId($id)->first();
-
-        $pdf = Pdf::loadView('admin.appointments.print', compact('appointment'));
-        return $pdf->download($appointment->serial_series.'-'.$appointment->customer->name.'.pdf');
+    /**
+     * Resolve the correct receipt blade view based on the receipt_style setting.
+     */
+    public static function resolveReceiptView(): string
+    {
+        $style = \App\Models\Setting::where('key_name', 'receipt_style')->value('key_value') ?? 'v1';
+        return match($style) {
+            'v2'    => 'admin.appointments.receipt-v2-modern',
+            'v3'    => 'admin.appointments.receipt-v3-minimal',
+            'v4'    => 'admin.appointments.receipt-v4-bold',
+            default => 'admin.appointments.receipt-v1-classic',
+        };
     }
 
 }

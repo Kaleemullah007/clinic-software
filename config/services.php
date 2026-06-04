@@ -31,4 +31,14 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    // ── WhatsApp Business API (Meta) ─────────────────────────────────────────
+    'whatsapp' => [
+        'token'          => env('WHATSAPP_TOKEN'),
+        'phone_id'       => env('WHATSAPP_PHONE_ID'),
+        'campaign_delay' => env('WHATSAPP_CAMPAIGN_DELAY', 2),
+        'timezone'       => env('WHATSAPP_TIMEZONE', 'Asia/Karachi'),
+    ],
+    'campaign_delay' => env('WHATSAPP_CAMPAIGN_DELAY', 2),
+'timezone'       => env('WHATSAPP_TIMEZONE', 'Asia/Karachi'),
+
 ];

@@ -295,13 +295,135 @@
                     </li>
                     @endcanany
 
+                    {{-- WhatsApp Logs --}}
+                    @can('whatsapp.logs.view')
+                    <li class="{{ request()->routeIs('whatsapp.logs') ? 'active' : '' }}">
+                        <a href="{{ route('whatsapp.logs') }}"><i class="bi fs-5 bi-whatsapp"></i><span class="hide-menu">WhatsApp Logs</span></a>
+                    </li>
+                    @endcan
+
+                    {{-- WhatsApp Campaign --}}
+                    @can('whatsapp-campaign.view')
+                    <li class="{{ request()->routeIs('whatsapp-campaign.*') ? 'active' : '' }}">
+                        <a href="{{ route('whatsapp-campaign.index') }}"><i class="bi fs-5 bi-megaphone"></i><span class="hide-menu">WA Campaign</span></a>
+                    </li>
+                    @endcan
+
+                    {{-- Staff ID Cards --}}
+                    @can('staff-id-cards.view')
+                    <li class="{{ request()->routeIs('staff-id-cards.*') ? 'active' : '' }}">
+                        <a href="{{ route('staff-id-cards.index') }}"><i class="bi fs-5 bi-person-badge"></i><span class="hide-menu">Staff ID Cards</span></a>
+                    </li>
+                    @endcan
+
+                    {{-- Point of Sale --}}
+                    @can('pos.view')
+                    <li class="{{ request()->routeIs('pos.*') ? 'active' : '' }}">
+                        <a href="{{ route('pos.index') }}"><i class="bi fs-5 bi-cash-stack"></i><span class="hide-menu">Point of Sale</span></a>
+                    </li>
+                    @endcan
+
+                    {{-- Call Manager --}}
+                    @can('call-manager.view')
+                    <li class="{{ request()->routeIs('call-manager.*') ? 'active' : '' }}">
+                        <a href="{{ route('call-manager.index') }}"><i class="bi fs-5 bi-telephone-outbound"></i><span class="hide-menu">Call Manager</span></a>
+                    </li>
+                    @endcan
+
+                    {{-- ── Device Approvals ── --}}
+                    @can('device-approvals.manage')
+                    <li class="{{ request()->routeIs('device-approvals.*') ? 'active' : '' }}">
+                        <a href="{{ route('device-approvals.index') }}">
+                            <i class="bi fs-5 bi-shield-lock"></i>
+                            <span class="hide-menu">
+                                Device Approvals
+                                @php $pendingCount = \App\Models\DeviceApproval::where('status','pending')->count(); @endphp
+                                @if($pendingCount > 0)
+                                <span class="badge ms-1" style="background:#B1083C;font-size:.65rem">{{ $pendingCount }}</span>
+                                @endif
+                            </span>
+                        </a>
+                    </li>
+                    @endcan
+
                     {{-- ── Reports ── --}}
                     @can('reports.view')
                     <li class="sidebar-section-label pt-2 pb-1">
                         <small class="text-uppercase text-muted px-3" style="font-size:10px;letter-spacing:1px;display:block">Analytics</small>
                     </li>
-                    <li class="{{ request()->routeIs('reports.*') ? 'active' : '' }}">
-                        <a href="{{ route('reports.index') }}"><i class="bi fs-5 bi-bar-chart-line"></i><span class="hide-menu">Reports</span></a>
+                    <li class="{{ request()->routeIs('reports.index') ? 'active' : '' }}">
+                        <a href="{{ route('reports.index') }}"><i class="bi fs-5 bi-bar-chart-line"></i><span class="hide-menu">All Reports</span></a>
+                    </li>
+                    <li class="{{ request()->routeIs('reports.appointments') ? 'active' : '' }}">
+                        <a href="{{ route('reports.appointments') }}" style="padding-left:2.6rem">
+                            <i class="bi bi-calendar2-check fs-6"></i><span class="hide-menu">Appointments</span>
+                        </a>
+                    </li>
+                    <li class="{{ request()->routeIs('reports.services') ? 'active' : '' }}">
+                        <a href="{{ route('reports.services') }}" style="padding-left:2.6rem">
+                            <i class="bi bi-scissors fs-6"></i><span class="hide-menu">Service Revenue</span>
+                        </a>
+                    </li>
+                    @can('reports.service-gap')
+                    <li class="{{ request()->routeIs('reports.service-gap') ? 'active' : '' }}">
+                        <a href="{{ route('reports.service-gap') }}" style="padding-left:2.6rem">
+                            <i class="bi bi-search-heart fs-6"></i><span class="hide-menu">Service Gap</span>
+                        </a>
+                    </li>
+                    @endcan
+                    @can('reports.product-gap')
+                    <li class="{{ request()->routeIs('reports.product-gap') ? 'active' : '' }}">
+                        <a href="{{ route('reports.product-gap') }}" style="padding-left:2.6rem">
+                            <i class="bi bi-box-seam fs-6"></i><span class="hide-menu">Product Gap</span>
+                        </a>
+                    </li>
+                    @endcan
+                    <li class="{{ request()->routeIs('reports.revenue') ? 'active' : '' }}">
+                        <a href="{{ route('reports.revenue') }}" style="padding-left:2.6rem">
+                            <i class="bi bi-graph-up-arrow fs-6"></i><span class="hide-menu">Revenue</span>
+                        </a>
+                    </li>
+                    <li class="{{ request()->routeIs('reports.patients') ? 'active' : '' }}">
+                        <a href="{{ route('reports.patients') }}" style="padding-left:2.6rem">
+                            <i class="bi bi-people fs-6"></i><span class="hide-menu">Patients</span>
+                        </a>
+                    </li>
+                    <li class="{{ request()->routeIs('reports.doctor-performance') ? 'active' : '' }}">
+                        <a href="{{ route('reports.doctor-performance') }}" style="padding-left:2.6rem">
+                            <i class="bi bi-person-badge fs-6"></i><span class="hide-menu">Doctor Performance</span>
+                        </a>
+                    </li>
+                    <li class="{{ request()->routeIs('reports.products-sold') ? 'active' : '' }}">
+                        <a href="{{ route('reports.products-sold') }}" style="padding-left:2.6rem">
+                            <i class="bi bi-bag-check fs-6"></i><span class="hide-menu">Products Sold</span>
+                        </a>
+                    </li>
+                    <li class="{{ request()->routeIs('reports.expenses') ? 'active' : '' }}">
+                        <a href="{{ route('reports.expenses') }}" style="padding-left:2.6rem">
+                            <i class="bi bi-cash-stack fs-6"></i><span class="hide-menu">Expenses</span>
+                        </a>
+                    </li>
+                    <li class="{{ request()->routeIs('reports.salaries') ? 'active' : '' }}">
+                        <a href="{{ route('reports.salaries') }}" style="padding-left:2.6rem">
+                            <i class="bi bi-wallet2 fs-6"></i><span class="hide-menu">Salaries</span>
+                        </a>
+                    </li>
+                    <li class="{{ request()->routeIs('reports.inventory') ? 'active' : '' }}">
+                        <a href="{{ route('reports.inventory') }}" style="padding-left:2.6rem">
+                            <i class="bi bi-boxes fs-6"></i><span class="hide-menu">Inventory</span>
+                        </a>
+                    </li>
+                    @can('pos.view')
+                    <li class="{{ request()->routeIs('pos.report') ? 'active' : '' }}">
+                        <a href="{{ route('pos.report') }}" style="padding-left:2.6rem">
+                            <i class="bi bi-shop fs-6"></i><span class="hide-menu">POS Report</span>
+                        </a>
+                    </li>
+                    @endcan
+                    <li class="{{ request()->routeIs('reports.summary') ? 'active' : '' }}">
+                        <a href="{{ route('reports.summary') }}" style="padding-left:2.6rem;font-weight:600">
+                            <i class="bi bi-graph-up-arrow fs-6" style="color:#10b981"></i><span class="hide-menu" style="color:#10b981">P&amp;L Summary</span>
+                        </a>
                     </li>
                     @endcan
 
@@ -312,6 +434,33 @@
     <!-- End Left Sidebar -->
 
     <div class="content-wrapper">
+        {{-- ── Impersonation Banner ───────────────────────────────────── --}}
+        @if(session('impersonating_id'))
+        @php $impersonatedUser = auth()->user(); @endphp
+        <div style="
+            background: linear-gradient(90deg,#B1083C,#d13729);
+            color:#fff; padding:8px 20px;
+            display:flex; align-items:center; justify-content:space-between;
+            flex-wrap:wrap; gap:8px; font-size:.875rem; font-weight:600;
+            border-bottom:2px solid rgba(0,0,0,.15);
+        ">
+            <span>
+                <i class="bi bi-person-fill-gear me-2"></i>
+                You are acting as
+                <strong>{{ $impersonatedUser->name }}</strong>
+                <span style="opacity:.8;font-weight:400;font-size:.8rem">
+                    ({{ ucfirst($impersonatedUser->role ?? 'User') }})
+                </span>
+            </span>
+            <a href="{{ route('users.stop-acting') }}"
+               style="background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.5);
+                      color:#fff;border-radius:6px;padding:4px 14px;font-size:.8rem;
+                      text-decoration:none;font-weight:600;white-space:nowrap">
+                <i class="bi bi-arrow-left-circle me-1"></i>Back to My Account
+            </a>
+        </div>
+        @endif
+
         <div class="min-height-css">
             @yield('content')
         </div>
@@ -330,6 +479,14 @@
     width:0;
 }
 }
+/* Remove sidebar hover highlight effect */
+ul#sidebar li:hover          { border-left: 5px solid #fff !important; }
+ul#sidebar li a:hover        { color: #636262 !important; background: transparent !important; }
+ul#sidebar li.active:hover   { border-left: 5px solid #B1083C !important; }
+ul#sidebar li.active a:hover { color: #b1083c !important; background: #f4f7f7 !important; }
+
+/* ── Kill global card hover-scale from compiled app.css ── */
+.card, .card:hover { transform: none !important; transition: none !important; }
 </style>
 
 <script src="https://gitcdn.github.io/bootstrap-toggle/2.2.0/js/bootstrap-toggle.min.js"></script>

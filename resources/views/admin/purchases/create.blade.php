@@ -66,8 +66,8 @@
                             <div class="col-md-3">
                                 <select name="items[0][product_id]" class="form-select border-secondary product-select" required>
                                     <option value="">— Product —</option>
-                                    @foreach($products as $p)
-                                    <option value="{{ $p->id }}" data-has-var="{{ $p->has_variations?1:0 }}" data-price="{{ $p->price }}" data-variations="{{ $p->variations->toJson() }}">{{ $p->name }}</option>
+                                    @foreach($productOpts as $p)
+                                    <option value="{{ $p['id'] }}" data-has-var="{{ $p['has_variations']?1:0 }}" data-price="{{ $p['price'] }}" data-variations="{{ json_encode($p['variations']) }}">{{ $p['name'] }}</option>
                                     @endforeach
                                 </select>
                             </div>
@@ -104,7 +104,7 @@
 @section('script')
 <style>.text-theme-color{color:#B1083C;}.btn-theme{background:linear-gradient(90deg,#B1083C,#d13729);color:#fff;border:none;}.btn-outline-theme{border-color:#B1083C;color:#B1083C;}.btn-outline-theme:hover{background:#B1083C;color:#fff;}.shadow-css{background:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.08);}</style>
 <script>
-const productOpts = @json($products->map(fn($p)=>['id'=>$p->id,'name'=>$p->name,'price'=>$p->price,'has_variations'=>$p->has_variations,'variations'=>$p->variations]));
+const productOpts = @json($productOpts);
 let idx = 1;
 
 function buildRow(i){
