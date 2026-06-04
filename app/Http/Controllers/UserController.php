@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Clinic;
+use App\Models\Country;
 use App\Models\Role;
 use App\Models\User;
 use Database\Seeders\PermissionSeeder;
@@ -41,13 +42,22 @@ class UserController extends Controller
                         . ucfirst(str_replace('-', ' ', $r->name)) . '</span>'
                     )->implode(' ');
                 })
-                ->addColumn('status_badge', fn (User $u) =>
-                    $u->status
-                        ? '<span class="badge bg-success">Active</span>'
-                        : '<span class="badge bg-danger">Inactive</span>'
-                )
+                ->addColumn('status_badge', function (User $u) {
+                    $label  = $u->status ? 'Active' : 'Inactive';
+                    $class  = $u->status ? 'bg-success' : 'bg-danger';
+                    $url    = route('users.toggle-status', $u->id);
+                    return '<button type="button"
+                                class="badge border-0 btn-toggle-status"
+                                style="cursor:pointer;font-size:.8rem;padding:5px 10px"
+                                data-id="' . $u->id . '"
+                                data-name="' . e($u->name) . '"
+                                data-status="' . $u->status . '"
+                                data-url="' . $url . '">'
+                        . '<span class="badge ' . $class . ' w-100">' . $label . '</span>'
+                        . '</button>';
+                })
                 ->addColumn('action', function (User $user) {
-                    $edit = $del = '';
+                    $edit = $del = $actAs = '';
                     if (auth()->user()->can('users.edit')) {
                         $edit = '<a href="' . route('users.edit', $user->id) . '" class="btn btn-sm btn-outline-theme me-1">
                                     <i class="bi bi-pencil-square"></i> Edit
@@ -62,7 +72,16 @@ class UserController extends Controller
                                     </button>
                                </form>';
                     }
-                    return $edit . $del;
+                    // Act As — superadmin only, not on other superadmin rows
+                    if (auth()->user()->isSuperAdmin() && !$user->hasRole('super-admin')) {
+                        $actAs = '<a href="' . route('users.act-as', $user->id) . '"
+                                     class="btn btn-sm ms-1 text-white"
+                                     style="background:#B1083C;border:none"
+                                     title="Act as ' . e($user->name) . '">
+                                     <i class="bi bi-person-fill-gear me-1"></i>Act As
+                                  </a>';
+                    }
+                    return $edit . $del . $actAs;
                 })
                 ->rawColumns(['roles_html', 'status_badge', 'action'])
                 ->make(true);
@@ -77,7 +96,8 @@ class UserController extends Controller
         $roles       = Role::all();
         $modules     = PermissionSeeder::$modules;
         $permissions = Permission::all()->groupBy(fn($p) => explode('.', $p->name)[0]);
-        return view('admin.users.create', compact('clinics', 'roles', 'modules', 'permissions'));
+        $countries   = Country::active()->orderBy('name')->get(['id', 'name']);
+        return view('admin.users.create', compact('clinics', 'roles', 'modules', 'permissions', 'countries'));
     }
 
     public function store(Request $request)
@@ -89,12 +109,16 @@ class UserController extends Controller
         ]);
 
         $user = User::create([
-            'name'     => $request->name,
-            'email'    => $request->email,
-            'password' => bcrypt($request->password),
-            'role'     => $request->spatie_role ?? '',
-            'status'   => $request->has('status') ? 1 : 0,
-            'phone'    => $request->phone,
+            'name'       => $request->name,
+            'email'      => $request->email,
+            'password'   => bcrypt($request->password),
+            'role'       => $request->spatie_role ?? '',
+            'status'     => $request->has('status') ? 1 : 0,
+            'phone'      => $request->phone,
+            'clinic_id'  => $request->clinic_id   ?: null,
+            'country_id' => $request->country_id ?: null,
+            'state_id'   => $request->state_id   ?: null,
+            'city_id'    => $request->city_id     ?: null,
         ]);
 
         if ($request->spatie_role) {
@@ -118,8 +142,9 @@ class UserController extends Controller
         $permissions       = Permission::all()->groupBy(fn($p) => explode('.', $p->name)[0]);
         $userRoles         = $User->roles->pluck('name')->toArray();
         $directPermissions = $User->getDirectPermissions()->pluck('name')->toArray();
+        $countries         = Country::active()->orderBy('name')->get(['id', 'name']);
         return view('admin.users.edit', compact(
-            'User', 'clinics', 'roles', 'modules', 'permissions', 'userRoles', 'directPermissions'
+            'User', 'clinics', 'roles', 'modules', 'permissions', 'userRoles', 'directPermissions', 'countries'
         ));
     }
 
@@ -131,10 +156,14 @@ class UserController extends Controller
         ]);
 
         $data = [
-            'name'   => $request->name,
-            'email'  => $request->email,
-            'status' => $request->has('status') ? 1 : 0,
-            'phone'  => $request->phone,
+            'name'       => $request->name,
+            'email'      => $request->email,
+            'status'     => $request->has('status') ? 1 : 0,
+            'phone'      => $request->phone,
+            'clinic_id'  => $request->clinic_id   ?: null,
+            'country_id' => $request->country_id ?: null,
+            'state_id'   => $request->state_id   ?: null,
+            'city_id'    => $request->city_id     ?: null,
         ];
 
         if ($request->filled('password')) {
@@ -199,5 +228,51 @@ class UserController extends Controller
         ]);
 
         return redirect()->back()->with('message', 'Profile updated successfully.');
+    }
+
+    /* ══════════════════════════════════════════════════════════════════
+       TOGGLE STATUS — activate / deactivate a user
+    ══════════════════════════════════════════════════════════════════ */
+    public function toggleStatus(User $user)
+    {
+        $this->authorize('users.edit');
+        $user->update(['status' => $user->status ? 0 : 1]);
+        return response()->json([
+            'status'  => 'success',
+            'active'  => (bool) $user->status,
+            'message' => $user->name . ' has been ' . ($user->status ? 'activated' : 'deactivated') . '.',
+        ]);
+    }
+
+    /* ══════════════════════════════════════════════════════════════════
+       ACT AS — superadmin impersonates another user
+    ══════════════════════════════════════════════════════════════════ */
+    public function actAs(User $user)
+    {
+        abort_unless(auth()->user()->isSuperAdmin(), 403);
+        abort_if($user->hasRole('super-admin'), 403, 'Cannot impersonate another superadmin.');
+
+        // Store the original superadmin's ID in session
+        session(['impersonating_id' => auth()->id()]);
+
+        // Switch to the target user (bypasses all normal auth)
+        Auth::loginUsingId($user->id);
+
+        return redirect()->route('dashboard')
+            ->with('success', 'You are now acting as ' . $user->name);
+    }
+
+    /* ── Stop acting — return to original superadmin account ─────── */
+    public function stopActing()
+    {
+        $originalId = session('impersonating_id');
+        abort_unless($originalId, 403, 'Not currently impersonating.');
+
+        // Restore the original superadmin
+        Auth::loginUsingId($originalId);
+        session()->forget('impersonating_id');
+
+        return redirect()->route('users.index')
+            ->with('success', 'You have returned to your account.');
     }
 }

@@ -74,6 +74,9 @@
     .btn-outline-theme { border-color:#B1083C; color:#B1083C; }
     .btn-outline-theme:hover { background:#B1083C; color:#fff; }
     #appointmentsTable thead th { background:linear-gradient(90deg,#B1083C 0%,#d13729 100%); color:#fff; border:none; }
+    .btn-wa { background:#25d366; color:#fff; border:none; }
+    .btn-wa:hover { background:#1ebe5d; color:#fff; }
+    .btn-wa:disabled { background:#a8d5b5; cursor:not-allowed; }
 
     /* Select2 theme */
     #filterPatient + .select2-container .select2-selection--single {
@@ -168,14 +171,92 @@ $(window).on('load', function () {
         table.search('').ajax.reload();
     });
 
-    // ── Prescription modal ───────────────────────────────────────────────────
-    document.addEventListener('show.bs.modal', function (e) {
-        if (e.target.id !== 'prescriptionModal') return;
-        var btn = e.relatedTarget;
-        if (!btn) return;
-        document.getElementById('px_appointment_id').value = btn.dataset.appointmentId || '';
-        document.getElementById('px_user_id').value        = btn.dataset.userId || '';
+    // ── WhatsApp send receipt ────────────────────────────────────────────────
+    $(document).on('click', '.btn-wa-send', function () {
+        var btn           = $(this);
+        var appointmentId = btn.data('id');
+        var token         = btn.data('token');
+
+        Swal.fire({
+            title: 'Send WhatsApp Receipt?',
+            text: 'This will send the appointment receipt PDF to the patient via WhatsApp.',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#25d366',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: '<i class="bi bi-whatsapp me-1"></i> Send',
+            cancelButtonText: 'Cancel',
+        }).then(function (result) {
+            if (!result.isConfirmed) return;
+
+            btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span>');
+
+            $.ajax({
+                url: '/appointments/' + appointmentId + '/send-whatsapp-receipt',
+                type: 'POST',
+                data: { _token: token },
+                success: function (res) {
+                    if (res.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Sent!',
+                            text: res.message,
+                            timer: 2500,
+                            showConfirmButton: false,
+                        });
+                        table.ajax.reload(null, false);
+                    } else {
+                        Swal.fire('Error', res.message, 'error');
+                        btn.prop('disabled', false).html('<i class="bi bi-whatsapp"></i>');
+                    }
+                },
+                error: function (xhr) {
+                    var msg = xhr.responseJSON?.message ?? 'Something went wrong. Please try again.';
+                    Swal.fire('Error', msg, 'error');
+                    btn.prop('disabled', false).html('<i class="bi bi-whatsapp"></i>');
+                },
+            });
+        });
     });
+
+    // ── Payment status toggle ────────────────────────────────────────────────
+    $(document).on('click', '.btn-toggle-payment', function () {
+        var badge      = $(this);
+        var id         = badge.data('id');
+        var current    = badge.data('status');
+        var newLabel   = current === 'paid' ? 'Unpaid' : 'Paid';
+        var newIcon    = current === 'paid' ? '✗' : '✔';
+
+        Swal.fire({
+            title: 'Change Payment Status?',
+            html: 'Mark this appointment as <strong>' + newLabel + '</strong>?',
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: current === 'paid' ? '#f59e0b' : '#198754',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: newIcon + ' Mark as ' + newLabel,
+            cancelButtonText: 'Cancel',
+        }).then(function (result) {
+            if (!result.isConfirmed) return;
+
+            $.ajax({
+                url: '/appointments/' + id + '/toggle-payment',
+                type: 'POST',
+                data: { _token: '{{ csrf_token() }}' },
+                success: function (res) {
+                    if (res.success) {
+                        table.ajax.reload(null, false);
+                    } else {
+                        Swal.fire('Error', 'Could not update status.', 'error');
+                    }
+                },
+                error: function () {
+                    Swal.fire('Error', 'Something went wrong.', 'error');
+                }
+            });
+        });
+    });
+
 });
 </script>
 @endsection

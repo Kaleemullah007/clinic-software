@@ -52,6 +52,54 @@
                                 <label class="form-check-label" for="statusToggle">Active</label>
                             </div>
                         </div>
+                        <div class="col-lg-6 col-md-6 col-12">
+                            <label class="form-label fw-semibold">Clinic</label>
+                            <select name="clinic_id" class="form-select border-secondary @error('clinic_id') is-invalid @enderror">
+                                <option value="">— No Clinic —</option>
+                                @foreach($clinics as $clinic)
+                                    <option value="{{ $clinic->id }}"
+                                        {{ old('clinic_id', $User->clinic_id) == $clinic->id ? 'selected' : '' }}>
+                                        {{ $clinic->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('clinic_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Location --}}
+            <div class="col-12">
+                <div class="shadow-css p-3">
+                    <h6 class="fw-bold border-bottom pb-2 mb-3"><i class="bi bi-geo-alt me-2 text-theme-color"></i>Location</h6>
+                    <div class="row g-3">
+                        <div class="col-lg-4 col-md-6 col-12">
+                            <label class="form-label fw-semibold">Country</label>
+                            <select name="country_id" id="countrySelect" class="form-select border-secondary">
+                                <option value="">— Select Country —</option>
+                                @foreach($countries as $country)
+                                    <option value="{{ $country->id }}"
+                                        {{ old('country_id', $User->country_id) == $country->id ? 'selected' : '' }}>
+                                        {{ $country->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-lg-4 col-md-6 col-12">
+                            <label class="form-label fw-semibold">State / Province</label>
+                            <select name="state_id" id="stateSelect" class="form-select border-secondary"
+                                {{ $User->country_id ? '' : 'disabled' }}>
+                                <option value="">— Select State —</option>
+                            </select>
+                        </div>
+                        <div class="col-lg-4 col-md-6 col-12">
+                            <label class="form-label fw-semibold">City</label>
+                            <select name="city_id" id="citySelect" class="form-select border-secondary"
+                                {{ $User->state_id ? '' : 'disabled' }}>
+                                <option value="">— Select City —</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -162,6 +210,73 @@
     .role-selected { border-color:#B1083C !important; background:#fce4ec !important; }
 </style>
 <script>
+/* ── Cascading location dropdowns ── */
+(function () {
+    const statesUrl  = '{{ route("pos.states") }}';
+    const citiesUrl  = '{{ route("pos.cities") }}';
+
+    const countryEl = document.getElementById('countrySelect');
+    const stateEl   = document.getElementById('stateSelect');
+    const cityEl    = document.getElementById('citySelect');
+
+    function resetSelect(el, placeholder) {
+        el.innerHTML = `<option value="">${placeholder}</option>`;
+        el.disabled  = true;
+    }
+
+    countryEl.addEventListener('change', function () {
+        resetSelect(stateEl, '— Select State —');
+        resetSelect(cityEl,  '— Select City —');
+        if (!this.value) return;
+
+        fetch(statesUrl + '?country_id=' + this.value)
+            .then(r => r.json())
+            .then(data => {
+                data.forEach(s => stateEl.insertAdjacentHTML('beforeend',
+                    `<option value="${s.id}">${s.name}</option>`));
+                stateEl.disabled = data.length === 0;
+            });
+    });
+
+    stateEl.addEventListener('change', function () {
+        resetSelect(cityEl, '— Select City —');
+        if (!this.value) return;
+
+        fetch(citiesUrl + '?state_id=' + this.value)
+            .then(r => r.json())
+            .then(data => {
+                data.forEach(c => cityEl.insertAdjacentHTML('beforeend',
+                    `<option value="${c.id}">${c.name}</option>`));
+                cityEl.disabled = data.length === 0;
+            });
+    });
+
+    /* Pre-populate existing user location on page load */
+    @if($User->country_id)
+    const savedStateId = '{{ old("state_id", $User->state_id) }}';
+    const savedCityId  = '{{ old("city_id",  $User->city_id)  }}';
+
+    fetch(statesUrl + '?country_id={{ $User->country_id }}')
+        .then(r => r.json())
+        .then(data => {
+            data.forEach(s => stateEl.insertAdjacentHTML('beforeend',
+                `<option value="${s.id}"${s.id == savedStateId ? ' selected' : ''}>${s.name}</option>`));
+            stateEl.disabled = false;
+            if (savedStateId) {
+                return fetch(citiesUrl + '?state_id=' + savedStateId);
+            }
+        })
+        .then(r => r && r.json())
+        .then(data => {
+            if (!data) return;
+            data.forEach(c => cityEl.insertAdjacentHTML('beforeend',
+                `<option value="${c.id}"${c.id == savedCityId ? ' selected' : ''}>${c.name}</option>`));
+            cityEl.disabled = false;
+        })
+        .catch(() => {});
+    @endif
+})();
+
 function selectRole(el, roleName) {
     document.querySelectorAll('.role-option').forEach(r => r.classList.remove('role-selected'));
     el.classList.add('role-selected');

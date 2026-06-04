@@ -59,15 +59,32 @@
                         </div>
                         <div class="col-lg-3 col-md-6 col-12 pt-3">
                             <label for="key_value" class="form-label fs-6">Value</label>
-                            <input type="text"
-                                class="form-control bg-grey border-secondary @error('key_value') is-invalid @enderror"
-                                id="key_value" name="data[{{$row}}][key_value]" placeholder="Value"
-                                value="{{ old('key_value',$setting->key_value) }}" autocomplete="key_value"  required>
-                            @error('key_value')
-                                <span class="invalid-feedback" role="alert">
-                                    <strong>{{ $message }}</strong>
-                                </span>
-                            @enderror
+                            @if($setting->key_name === 'receipt_style')
+                                <select class="form-select bg-grey border-secondary"
+                                        name="data[{{$row}}][key_value]" required>
+                                    <option value="v1" {{ $setting->key_value === 'v1' ? 'selected' : '' }}>V1 — Classic Table (Citi Lab style)</option>
+                                    <option value="v2" {{ $setting->key_value === 'v2' ? 'selected' : '' }}>V2 — Modern Colour Header</option>
+                                    <option value="v3" {{ $setting->key_value === 'v3' ? 'selected' : '' }}>V3 — Minimal Clean</option>
+                                    <option value="v4" {{ $setting->key_value === 'v4' ? 'selected' : '' }}>V4 — Bold Dark Header</option>
+                                </select>
+                            @elseif($setting->key_name === 'default_receipt')
+                                <select class="form-select bg-grey border-secondary"
+                                        name="data[{{$row}}][key_value]" required>
+                                    <option value="services_receipt" {{ $setting->key_value === 'services_receipt' ? 'selected' : '' }}>Services Receipt</option>
+                                    <option value="products_receipt" {{ $setting->key_value === 'products_receipt' ? 'selected' : '' }}>Products Receipt</option>
+                                    <option value="both"             {{ $setting->key_value === 'both'             ? 'selected' : '' }}>Both Receipts</option>
+                                </select>
+                            @else
+                                <input type="text"
+                                    class="form-control bg-grey border-secondary @error('key_value') is-invalid @enderror"
+                                    id="key_value" name="data[{{$row}}][key_value]" placeholder="Value"
+                                    value="{{ old('key_value',$setting->key_value) }}" autocomplete="key_value" required>
+                                @error('key_value')
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong>{{ $message }}</strong>
+                                    </span>
+                                @enderror
+                            @endif
                         </div>
 
                         <div class="col-lg-3 col-md-6 col-12 pt-3">

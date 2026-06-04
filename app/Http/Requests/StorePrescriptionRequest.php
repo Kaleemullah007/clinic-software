@@ -24,8 +24,9 @@ class StorePrescriptionRequest extends FormRequest
     public function rules()
     {
         return [
+            'type'           => 'nullable|in:prescription,note',
             'remarks'        => 'nullable|string',
-            'medicine'       => 'required|string',
+            'medicine'       => 'required_if:type,prescription|nullable|string',
             'dosage'         => 'nullable|string',
             'appointment_id' => 'required|exists:appointments,id',
             'user_id'        => 'required|exists:users,id',
@@ -35,6 +36,9 @@ class StorePrescriptionRequest extends FormRequest
 
     protected function prepareForValidation()
     {
-        $this->merge(['doctor_id' => auth()->id()]);
+        $this->merge([
+            'doctor_id' => auth()->id(),
+            'type'      => $this->type ?? 'prescription',
+        ]);
     }
 }

@@ -213,6 +213,22 @@
         </a>
         @endcan
 
+        {{-- WhatsApp Receipts --}}
+        @can('whatsapp.logs.view')
+        <a href="{{ route('whatsapp.logs') }}" class="text-decoration-none stat-grid-item">
+            <div class="stat-card">
+                <div class="stat-icon" style="background:linear-gradient(135deg,#25d366,#1ebe5d);">
+                    <i class="bi bi-whatsapp"></i>
+                </div>
+                <div class="stat-value">{{ number_format($waSentToday) }}</div>
+                <div class="stat-label">WhatsApp Today</div>
+                <div class="stat-sub">
+                    <span class="text-success small"><i class="bi bi-check-circle me-1"></i>{{ $waSentThisMonth }} this month</span>
+                </div>
+            </div>
+        </a>
+        @endcan
+
     </div>
 
     {{-- ── Low stock alert banner — always visible ────────────────────────── --}}

@@ -155,6 +155,38 @@ class PrescriptionController extends Controller
         return response()->json(['success' => true]);
     }
 
+    /**
+     * AJAX: return all prescriptions AND notes for a patient (user_id).
+     * Grouped by type so the modal tabs can render them separately.
+     */
+    public function getPatientRecords(\Illuminate\Http\Request $request, $userId)
+    {
+        $records = Prescription::with(['doctor:id,name', 'appointment:id,date'])
+            ->where('user_id', $userId)
+            ->orderByDesc('created_at')
+            ->get()
+            ->map(function ($r) {
+                return [
+                    'id'         => $r->id,
+                    'type'       => $r->type,
+                    'medicine'   => $r->medicine,
+                    'dosage'     => $r->dosage,
+                    'remarks'    => $r->remarks,
+                    'doctor'     => $r->doctor?->name ?? '—',
+                    'appt_date'  => $r->appointment?->date
+                                    ? \Carbon\Carbon::parse($r->appointment->date)->format('d M Y')
+                                    : '—',
+                    'created_at' => $r->created_at->format('d M Y, H:i'),
+                    'can_delete' => auth()->user()->can('delete', $r),
+                ];
+            });
+
+        return response()->json([
+            'prescriptions' => $records->where('type', 'prescription')->values(),
+            'notes'         => $records->where('type', 'note')->values(),
+        ]);
+    }
+
 
     public function recordsQuery($request)
     {

@@ -10,19 +10,33 @@
         <hr class="my-2">
     </div>
     <div class="row mx-1 mb-3">
-        <div class="col-lg-4">
-            <form method="GET" class="d-flex gap-2">
-                <select name="year" class="form-select border-secondary form-select-sm">
+        <div class="col-lg-8">
+            <form method="GET" class="d-flex flex-wrap gap-2 align-items-end">
+                <select name="year" class="form-select border-secondary form-select-sm" style="width:100px">
                     @for($y=now()->year;$y>=now()->year-3;$y--)
                     <option value="{{ $y }}" {{ $year==$y?'selected':'' }}>{{ $y }}</option>
                     @endfor
                 </select>
-                <select name="month" class="form-select border-secondary form-select-sm">
+                <select name="month" class="form-select border-secondary form-select-sm" style="width:130px">
                     <option value="">All Months</option>
                     @for($m=1;$m<=12;$m++)
                     <option value="{{ $m }}" {{ $month==$m?'selected':'' }}>{{ \Carbon\Carbon::create(null,$m)->format('F') }}</option>
                     @endfor
                 </select>
+                @if(auth()->user()->isSuperAdmin())
+                <select name="clinic_id" class="form-select border-secondary form-select-sm" style="width:140px">
+                    <option value="">All Clinics</option>
+                    @foreach($clinics as $c)
+                    <option value="{{ $c->id }}" {{ ($clinicId ?? '') == $c->id ? 'selected' : '' }}>{{ $c->name }}</option>
+                    @endforeach
+                </select>
+                <select name="doctor_id" class="form-select border-secondary form-select-sm" style="width:140px">
+                    <option value="">All Doctors</option>
+                    @foreach($doctors as $d)
+                    <option value="{{ $d->id }}" {{ ($doctorId ?? '') == $d->id ? 'selected' : '' }}>{{ $d->name }}</option>
+                    @endforeach
+                </select>
+                @endif
                 <button class="btn btn-theme btn-sm">Filter</button>
             </form>
         </div>

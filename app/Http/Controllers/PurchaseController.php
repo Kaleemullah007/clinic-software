@@ -58,10 +58,23 @@ class PurchaseController extends Controller
     public function create()
     {
         $this->authorize('purchases.create');
-        $vendors  = Vendor::where('status', 1)->get(['id','name','company']);
-        $products = Product::where('status', 1)->with('variations')->get(['id','name','price','has_variations']);
+        $vendors    = Vendor::where('status', 1)->get(['id','name','company']);
         $pendingPRs = PurchaseRequest::where('status', 'approved')->get(['id','pr_number']);
-        return view('admin.purchases.create', compact('vendors', 'products', 'pendingPRs'));
+
+        $productOpts = Product::where('status', 1)
+            ->with('variations')
+            ->get(['id','name','price','has_variations'])
+            ->map(function ($p) {
+                return [
+                    'id'             => $p->id,
+                    'name'           => $p->name,
+                    'price'          => $p->price,
+                    'has_variations' => $p->has_variations,
+                    'variations'     => $p->variations,
+                ];
+            })->values();
+
+        return view('admin.purchases.create', compact('vendors', 'productOpts', 'pendingPRs'));
     }
 
     public function store(Request $request)
