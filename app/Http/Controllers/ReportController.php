@@ -551,6 +551,32 @@ class ReportController extends Controller
             $cursor->addMonth();
         }
 
+        // ── AJAX: return JSON so the page can update without reload ──────
+        if ($request->ajax()) {
+            $currency = auth()->user()->currency ?? '';
+            $fmt = fn($v, $d = 0) => number_format($v, $d);
+
+            return response()->json([
+                'serviceRevenue'   => $serviceRevenue,
+                'productRevenue'   => $productRevenue,
+                'posSales'         => $posSales,
+                'totalIncome'      => $totalIncome,
+                'businessExpenses' => $businessExpenses,
+                'salaryCosts'      => $salaryCosts,
+                'doctorShares'     => $doctorShares,
+                'productCogs'      => $productCogs,
+                'totalExpenses'    => $totalExpenses,
+                'netProfit'        => $netProfit,
+                'trendMonths'      => $trendMonths,
+                'trendIncome'      => $trendIncome,
+                'trendExpense'     => $trendExpense,
+                'trendProfit'      => $trendProfit,
+                'currency'         => $currency,
+                'from'             => $from,
+                'to'               => $to,
+            ]);
+        }
+
         return view('admin.reports.summary', compact(
             'clinics', 'doctors', 'from', 'to', 'clinicId', 'doctorId',
             'serviceRevenue', 'productRevenue', 'posSales', 'totalIncome',

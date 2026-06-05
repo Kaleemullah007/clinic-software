@@ -487,6 +487,10 @@ ul#sidebar li.active a:hover { color: #b1083c !important; background: #f4f7f7 !i
 
 /* ── Kill global card hover-scale from compiled app.css ── */
 .card, .card:hover { transform: none !important; transition: none !important; }
+
+/* ── Fix horizontal scroll globally ── */
+html, body { overflow-x: hidden !important; }
+.content-wrapper { overflow-x: hidden; max-width: 100%; }
 </style>
 
 <script src="https://gitcdn.github.io/bootstrap-toggle/2.2.0/js/bootstrap-toggle.min.js"></script>

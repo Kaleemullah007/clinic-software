@@ -1,4 +1,8 @@
 
+/* ── Global horizontal scroll fix ── */
+body, html { overflow-x: hidden !important; max-width: 100%; }
+.content-wrapper { overflow-x: hidden; }
+
 /* start Dashboard css */
 /* 
 .content-wrapper {
