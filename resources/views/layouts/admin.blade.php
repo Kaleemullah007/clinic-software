@@ -491,6 +491,23 @@ ul#sidebar li.active a:hover { color: #b1083c !important; background: #f4f7f7 !i
 /* ── Fix horizontal scroll globally ── */
 html, body { overflow-x: hidden !important; }
 .content-wrapper { overflow-x: hidden; max-width: 100%; }
+
+/* ── Global print styles ── */
+@media print {
+    .left-menu,
+    .bg-white.fixed-top,
+    .header,
+    .no-print { display: none !important; }
+    .content-wrapper {
+        margin-left: 0 !important;
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+        width: 100% !important;
+    }
+    .min-height-css { padding-top: 0 !important; min-height: unset !important; }
+    .print-header-only { display: block !important; }
+    html, body { overflow: visible !important; }
+}
 </style>
 
 <script src="https://gitcdn.github.io/bootstrap-toggle/2.2.0/js/bootstrap-toggle.min.js"></script>

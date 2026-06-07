@@ -2,14 +2,29 @@
 
 @section('content')
 <div class="container-fluid">
-    <div class="row pt-3 mx-1">
+
+    {{-- Print-only header --}}
+    <div class="print-header-only">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px;">
+            <strong style="font-size:18px;color:#B1083C;">RKTech</strong>
+            <span style="font-size:15px;font-weight:600;color:#1a1a2e;">— Salary Report</span>
+        </div>
+        <div style="font-size:12px;color:#555;margin-bottom:4px;">
+            Year: <strong>{{ $year }}</strong>
+        </div>
+        <div style="font-size:11px;color:#888;">Printed on: {{ now()->format('d M Y, h:i A') }}</div>
+        <hr style="margin:10px 0 16px;">
+    </div>
+
+    <div class="row pt-3 mx-1 no-print">
         <div class="col-12 d-flex justify-content-between align-items-center">
             <h4 class="fw-bold"><i class="bi bi-wallet2 me-2 text-theme-color"></i>Salary Report — {{ $year }}</h4>
             <a href="{{ route('reports.index') }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i> Reports</a>
         </div>
         <hr class="my-2">
     </div>
-    <div class="row mx-1 mb-3">
+
+    <div class="row mx-1 mb-3 no-print">
         <div class="col-lg-3">
             <form method="GET" class="d-flex gap-2">
                 <select name="year" class="form-select border-secondary form-select-sm">
@@ -20,12 +35,19 @@
                 <button class="btn btn-theme btn-sm">Filter</button>
             </form>
         </div>
+        <div class="col-lg-auto ms-2 d-flex align-items-center">
+            <button onclick="window.print()" class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-printer me-1"></i>Print
+            </button>
+        </div>
     </div>
+
     <div class="row mx-1 mb-4">
         <div class="col-lg-8">
             <div class="shadow-css p-3"><canvas id="salChart" height="120"></canvas></div>
         </div>
     </div>
+
     @foreach($data as $month => $salaries)
     <div class="row mx-1 mb-3">
         <div class="col-12">
@@ -52,8 +74,19 @@
     @endforeach
 </div>
 @endsection
+
 @section('script')
-<style>.text-theme-color{color:#B1083C;}.btn-theme{background:linear-gradient(90deg,#B1083C,#d13729);color:#fff;border:none;}.shadow-css{background:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.08);}</style>
+<style>
+.text-theme-color{color:#B1083C;}
+.btn-theme{background:linear-gradient(90deg,#B1083C,#d13729);color:#fff;border:none;}
+.shadow-css{background:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.08);}
+.print-header-only { display: none; }
+@media print {
+    canvas { max-height: 280px !important; }
+    .shadow-css { box-shadow: none !important; border: 1px solid #eee; }
+    .table thead th { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+</style>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 @php
     $mLabelArr = [];

@@ -38,12 +38,45 @@
 
     /* ── Progress bar animate ── */
     .bar-fill { transition:width .5s ease; }
+
+    .print-header-only { display: none; }
+    @media print {
+        .pnl-stat { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        .pnl-panel { box-shadow: none !important; border: 1px solid #e5e5e5; }
+        .pnl-panel-head { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        canvas { max-height: 280px !important; }
+        .table thead th { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        #summary-loading { display: none !important; }
+    }
 </style>
 
 {{-- Loading overlay --}}
 <div id="summary-loading"><div class="spinner-ring"></div></div>
 
-<div class="page-breadcrumb d-flex align-items-center mb-3">
+{{-- Print-only header --}}
+<div class="print-header-only">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px;">
+        <strong style="font-size:18px;color:#B1083C;">RKTech</strong>
+        <span style="font-size:15px;font-weight:600;color:#1a1a2e;">— P&amp;L Summary Report</span>
+    </div>
+    <div style="font-size:12px;color:#555;margin-bottom:4px;" id="print-filter-line">
+        Period: <strong>{{ $from }}</strong> to <strong>{{ $to }}</strong>
+        @if(!empty($clinicId) && isset($clinics))
+            &nbsp;&nbsp;|&nbsp;&nbsp; Clinic: <strong>{{ $clinics->firstWhere('id', $clinicId)?->name ?? 'All Clinics' }}</strong>
+        @else
+            &nbsp;&nbsp;|&nbsp;&nbsp; Clinic: <strong>All Clinics</strong>
+        @endif
+        @if(!empty($doctorId) && isset($doctors))
+            &nbsp;&nbsp;|&nbsp;&nbsp; Doctor: <strong>{{ $doctors->firstWhere('id', $doctorId)?->name ?? 'All Doctors' }}</strong>
+        @else
+            &nbsp;&nbsp;|&nbsp;&nbsp; Doctor: <strong>All Doctors</strong>
+        @endif
+    </div>
+    <div style="font-size:11px;color:#888;">Printed on: {{ now()->format('d M Y, h:i A') }}</div>
+    <hr style="margin:10px 0 16px;">
+</div>
+
+<div class="page-breadcrumb d-flex align-items-center mb-3 no-print">
     <div class="breadcrumb-title pe-3">P&L Summary</div>
     <div class="ps-3">
         <nav><ol class="breadcrumb mb-0 p-0">
@@ -55,7 +88,7 @@
 </div>
 
 {{-- ── Filter Bar ── --}}
-<div class="card mb-4">
+<div class="card mb-4 no-print">
     <div class="card-body py-3">
         <div class="row g-2 align-items-end" id="filter-row">
 
@@ -114,6 +147,14 @@
                 <div class="filter-label">&nbsp;</div>
                 <button id="apply-filter" class="btn btn-sm text-white w-100" style="background:linear-gradient(90deg,#B1083C,#d13729);border:none">
                     <i class="bi bi-funnel me-1"></i>Apply
+                </button>
+            </div>
+
+            {{-- Print button — always visible --}}
+            <div class="col-md-auto ms-auto">
+                <div class="filter-label">&nbsp;</div>
+                <button onclick="window.print()" class="btn btn-sm btn-outline-secondary">
+                    <i class="bi bi-printer me-1"></i>Print
                 </button>
             </div>
         </div>

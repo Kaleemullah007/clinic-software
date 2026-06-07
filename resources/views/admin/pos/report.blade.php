@@ -4,11 +4,51 @@
 {{-- styles injected inside content section below --}}
 
 @section('content')
+@php
+    $printClinic   = 'All Clinics';
+    $printCategory = 'All Categories';
+    $printStatus   = request('payment_status') ? ucfirst(request('payment_status')) : 'All';
+    if (request('clinic_id') && isset($clinics)) {
+        $cl = $clinics->firstWhere('id', request('clinic_id'));
+        if ($cl) $printClinic = $cl->name;
+    }
+    if (request('category_id') && isset($categories)) {
+        $ct = $categories->firstWhere('id', request('category_id'));
+        if ($ct) $printCategory = $ct->name;
+    }
+@endphp
+
 <style>
     .stat-card { border-radius:10px; padding:18px 20px; color:#fff; }
     .chart-card { background:#fff; border-radius:10px; box-shadow:0 2px 12px rgba(0,0,0,.07); padding:20px; }
+    .print-header-only { display: none; }
+    @media print {
+        .stat-card { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        .chart-card { box-shadow: none !important; border: 1px solid #eee; }
+        canvas { max-height: 280px !important; }
+        .table thead th { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        .card-header { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
 </style>
-<div class="page-breadcrumb d-flex align-items-center mb-3">
+
+{{-- Print-only header --}}
+<div class="print-header-only">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px;">
+        <strong style="font-size:18px;color:#B1083C;">RKTech</strong>
+        <span style="font-size:15px;font-weight:600;color:#1a1a2e;">— POS Report</span>
+    </div>
+    <div style="font-size:12px;color:#555;margin-bottom:4px;">
+        From: <strong>{{ $from }}</strong> &nbsp;&nbsp;|&nbsp;&nbsp;
+        To: <strong>{{ $to }}</strong> &nbsp;&nbsp;|&nbsp;&nbsp;
+        Clinic: <strong>{{ $printClinic }}</strong> &nbsp;&nbsp;|&nbsp;&nbsp;
+        Category: <strong>{{ $printCategory }}</strong> &nbsp;&nbsp;|&nbsp;&nbsp;
+        Status: <strong>{{ $printStatus }}</strong>
+    </div>
+    <div style="font-size:11px;color:#888;">Printed on: {{ now()->format('d M Y, h:i A') }}</div>
+    <hr style="margin:10px 0 16px;">
+</div>
+
+<div class="page-breadcrumb d-flex align-items-center mb-3 no-print">
     <div class="breadcrumb-title pe-3">POS Report</div>
     <div class="ps-3">
         <nav><ol class="breadcrumb mb-0 p-0">
@@ -20,7 +60,7 @@
 </div>
 
 {{-- ── Filter bar ── --}}
-<div class="card mb-4">
+<div class="card mb-4 no-print">
     <div class="card-body py-3">
         <form method="GET" action="{{ route('pos.report') }}">
             <div class="row g-2 align-items-end">
@@ -60,9 +100,14 @@
                         <option value="unpaid" {{ request('payment_status') === 'unpaid' ? 'selected' : '' }}>Unpaid</option>
                     </select>
                 </div>
-                <div class="col-md-2">
+                <div class="col-md-1">
                     <button type="submit" class="btn btn-sm text-white w-100" style="background:linear-gradient(90deg,#B1083C,#d13729);border:none">
                         <i class="bi bi-funnel me-1"></i>Apply
+                    </button>
+                </div>
+                <div class="col-md-1">
+                    <button type="button" onclick="window.print()" class="btn btn-sm btn-outline-secondary w-100">
+                        <i class="bi bi-printer me-1"></i>Print
                     </button>
                 </div>
             </div>
@@ -170,7 +215,7 @@
                         <th>Status</th>
                         <th>By</th>
                         <th>Date</th>
-                        <th></th>
+                        <th class="no-print"></th>
                     </tr>
                 </thead>
                 <tbody>
@@ -192,7 +237,7 @@
                         </td>
                         <td class="text-muted small">{{ $order->creator?->name ?? '—' }}</td>
                         <td class="text-muted small">{{ $order->created_at->format('d M Y') }}</td>
-                        <td>
+                        <td class="no-print">
                             <a href="{{ route('pos.show', $order->id) }}" class="btn btn-sm btn-outline-info py-0 px-1" title="Receipt">
                                 <i class="bi bi-receipt"></i>
                             </a>

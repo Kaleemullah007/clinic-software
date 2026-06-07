@@ -3,6 +3,20 @@
 
 @section('content')
 @include('admin.reports._styles')
+@php
+    $monthNames = ['','January','February','March','April','May','June','July','August','September','October','November','December'];
+    $printMonth  = $month ? $monthNames[(int)$month] : 'All Months';
+    $printClinic = 'All Clinics';
+    $printDoctor = 'All Doctors';
+    if (!empty($clinicId) && isset($clinics)) {
+        $cl = $clinics->firstWhere('id', $clinicId);
+        if ($cl) $printClinic = $cl->name;
+    }
+    if (!empty($doctorId) && isset($doctors)) {
+        $dr = $doctors->firstWhere('id', $doctorId);
+        if ($dr) $printDoctor = $dr->name;
+    }
+@endphp
 <style>
     .channel-radio-group { display:flex; gap:8px; flex-wrap:wrap; }
     .channel-radio-label {
@@ -20,6 +34,15 @@
     .dead-badge-dormant  { background:#fef9c3; color:#854d0e; border:1px solid #fde68a; font-size:.72rem; padding:2px 8px; border-radius:20px; font-weight:600; white-space:nowrap; }
     .dead-badge-period   { background:#ffedd5; color:#9a3412; border:1px solid #fed7aa; font-size:.72rem; padding:2px 8px; border-radius:20px; font-weight:600; white-space:nowrap; }
     .dead-row            { background:#fff8f8; }
+    .print-header-only   { display: none; }
+    @media print {
+        canvas { max-height: 280px !important; }
+        .rpt-panel { box-shadow: none !important; border: 1px solid #e5e5e5; }
+        .rpt-stat-card { box-shadow: none !important; border: 1px solid #ddd; break-inside: avoid; }
+        .rpt-table thead th { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+        .channel-radio-group { display: none !important; }
+        .channel-section.d-none { display: block !important; }
+    }
 </style>
 
 @php
@@ -33,8 +56,24 @@
 
 <div class="container-fluid">
 
+    {{-- Print-only header --}}
+    <div class="print-header-only">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px;">
+            <strong style="font-size:18px;color:#B1083C;">RKTech</strong>
+            <span style="font-size:15px;font-weight:600;color:#1a1a2e;">— Product Gap Report</span>
+        </div>
+        <div style="font-size:12px;color:#555;margin-bottom:4px;">
+            Year: <strong>{{ $year }}</strong> &nbsp;&nbsp;|&nbsp;&nbsp;
+            Month: <strong>{{ $printMonth }}</strong> &nbsp;&nbsp;|&nbsp;&nbsp;
+            Clinic: <strong>{{ $printClinic }}</strong> &nbsp;&nbsp;|&nbsp;&nbsp;
+            Doctor: <strong>{{ $printDoctor }}</strong>
+        </div>
+        <div style="font-size:11px;color:#888;">Printed on: {{ now()->format('d M Y, h:i A') }}</div>
+        <hr style="margin:10px 0 16px;">
+    </div>
+
     {{-- ── Header ──────────────────────────────────────────────────────── --}}
-    <div class="row pt-3 mx-1 align-items-center">
+    <div class="row pt-3 mx-1 align-items-center no-print">
         <div class="col-12 d-flex align-items-center gap-3">
             <a href="{{ route('reports.index') }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-arrow-left"></i></a>
             <h4 class="fw-bold mb-0">
@@ -45,7 +84,7 @@
     </div>
 
     {{-- ── Filter Bar ───────────────────────────────────────────────────── --}}
-    <div class="row mx-1 mb-3 g-2 align-items-end">
+    <div class="row mx-1 mb-3 g-2 align-items-end no-print">
         <div class="col-auto">
             <label class="form-label small text-muted mb-1">Year</label>
             <select id="filterYear" class="form-select form-select-sm border-secondary" style="width:110px">
@@ -84,6 +123,11 @@
         <div class="col-auto">
             <button id="applyFilter" class="btn btn-sm btn-danger">
                 <i class="bi bi-funnel me-1"></i>Apply
+            </button>
+        </div>
+        <div class="col-auto">
+            <button onclick="window.print()" class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-printer me-1"></i>Print
             </button>
         </div>
     </div>

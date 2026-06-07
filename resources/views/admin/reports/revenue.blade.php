@@ -1,15 +1,57 @@
 @extends('layouts.admin')
 
 @section('content')
+@php
+    $monthNames = ['','January','February','March','April','May','June','July','August','September','October','November','December'];
+    $printMonth  = $month ? $monthNames[(int)$month] : 'All Months';
+    $printClinic = 'All Clinics';
+    $printDoctor = 'All Doctors';
+    if (!empty($clinicId) && isset($clinics)) {
+        $cl = $clinics->firstWhere('id', $clinicId);
+        if ($cl) $printClinic = $cl->name;
+    }
+    if (!empty($doctorId) && isset($doctors)) {
+        $dr = $doctors->firstWhere('id', $doctorId);
+        if ($dr) $printDoctor = $dr->name;
+    }
+@endphp
+
 <div class="container-fluid">
-    <div class="row pt-3 mx-1">
-        <div class="col-12 d-flex justify-content-between align-items-center">
-            <h4 class="fw-bold"><i class="bi bi-graph-up-arrow me-2 text-theme-color"></i>Revenue Report</h4>
-            <a href="{{ route('reports.index') }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-arrow-left me-1"></i> Reports</a>
+
+    {{-- Print-only header --}}
+    <div class="print-header-only">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px;">
+            <strong style="font-size:18px;color:#B1083C;">RKTech</strong>
+            <span style="font-size:15px;font-weight:600;color:#1a1a2e;">— Revenue Report</span>
         </div>
-        <hr class="my-2">
+        <div style="font-size:12px;color:#555;margin-bottom:4px;">
+            Year: <strong>{{ $year }}</strong> &nbsp;&nbsp;|&nbsp;&nbsp;
+            Month: <strong>{{ $printMonth }}</strong> &nbsp;&nbsp;|&nbsp;&nbsp;
+            Clinic: <strong>{{ $printClinic }}</strong> &nbsp;&nbsp;|&nbsp;&nbsp;
+            Doctor: <strong>{{ $printDoctor }}</strong>
+        </div>
+        <div style="font-size:11px;color:#888;">Printed on: {{ now()->format('d M Y, h:i A') }}</div>
+        <hr style="margin:10px 0 16px;">
     </div>
-    <div class="row mx-1 mb-3">
+
+    {{-- Page Header --}}
+    <div class="row pt-3 mx-1 align-items-center no-print">
+        <div class="col-12 d-flex justify-content-between align-items-center">
+            <h4 class="fw-bold mb-0"><i class="bi bi-graph-up-arrow me-2 text-theme-color"></i>Revenue Report</h4>
+            <div class="d-flex align-items-center gap-2">
+                <button onclick="window.print()" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1">
+                    <i class="bi bi-printer"></i> Print
+                </button>
+                <a href="{{ route('reports.index') }}" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1">
+                    <i class="bi bi-arrow-left"></i> Reports
+                </a>
+            </div>
+        </div>
+        <hr class="my-3">
+    </div>
+
+    {{-- Filter Bar + Total Revenue --}}
+    <div class="row mx-1 mb-4 align-items-center no-print">
         <div class="col-lg-8">
             <form method="GET" class="d-flex flex-wrap gap-2 align-items-end">
                 <select name="year" class="form-select border-secondary form-select-sm" style="width:100px">
@@ -37,13 +79,13 @@
                     @endforeach
                 </select>
                 @endif
-                <button class="btn btn-theme btn-sm">Filter</button>
+                <button class="btn btn-theme btn-sm"><i class="bi bi-funnel me-1"></i>Filter</button>
             </form>
         </div>
-        <div class="col-lg-3 ms-auto text-end">
-            <div class="shadow-css p-3">
-                <p class="mb-0 text-muted small">Total Revenue</p>
-                <h4 class="fw-bold text-theme-color mb-0">PKR {{ number_format($totalRevenue,2) }}</h4>
+        <div class="col-lg-4 d-flex justify-content-end align-items-center mt-3 mt-lg-0">
+            <div class="shadow-css px-4 py-3 text-end" style="border-left:4px solid #B1083C;min-width:200px">
+                <div class="text-muted small mb-1" style="font-size:.75rem;letter-spacing:.04em;text-transform:uppercase">Total Revenue</div>
+                <div class="fw-bold text-theme-color" style="font-size:1.35rem">PKR {{ number_format($totalRevenue,2) }}</div>
             </div>
         </div>
     </div>
@@ -80,7 +122,16 @@
 </div>
 @endsection
 @section('script')
-<style>.text-theme-color{color:#B1083C;}.btn-theme{background:linear-gradient(90deg,#B1083C,#d13729);color:#fff;border:none;}.shadow-css{background:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.08);}</style>
+<style>
+.text-theme-color{color:#B1083C;}
+.btn-theme{background:linear-gradient(90deg,#B1083C,#d13729);color:#fff;border:none;}
+.shadow-css{background:#fff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.08);}
+.print-header-only { display: none; }
+@media print {
+    canvas { max-height: 280px !important; }
+    .shadow-css { box-shadow: none !important; border: 1px solid #eee; }
+}
+</style>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
 const labels = @json($query->map(fn($r)=>\Carbon\Carbon::create($r->year,$r->month)->format('M Y')));

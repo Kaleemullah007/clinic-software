@@ -1,8 +1,41 @@
 @extends('layouts.admin')
 
 @section('content')
+@php
+    $monthNames = ['','January','February','March','April','May','June','July','August','September','October','November','December'];
+    $printMonth  = $month ? $monthNames[(int)$month] : 'All Months';
+    $printClinic = 'All Clinics';
+    $printDoctor = 'All Doctors';
+    if (!empty($clinicId) && isset($clinics)) {
+        $cl = $clinics->firstWhere('id', $clinicId);
+        if ($cl) $printClinic = $cl->name;
+    }
+    if (!empty($doctorId) && isset($doctors)) {
+        $dr = $doctors->firstWhere('id', $doctorId);
+        if ($dr) $printDoctor = $dr->name;
+    }
+@endphp
+
 <div class="container-fluid">
-    <div class="row pt-3 mx-1 align-items-center">
+
+    {{-- Print-only header (hidden on screen, shown when printing) --}}
+    <div class="print-header-only">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px;">
+            <strong style="font-size:18px;color:#B1083C;">RKTech</strong>
+            <span style="font-size:15px;font-weight:600;color:#1a1a2e;">— Products Sold Report</span>
+        </div>
+        <div style="font-size:12px;color:#555;margin-bottom:4px;">
+            Year: <strong>{{ $year }}</strong> &nbsp;&nbsp;|&nbsp;&nbsp;
+            Month: <strong>{{ $printMonth }}</strong> &nbsp;&nbsp;|&nbsp;&nbsp;
+            Clinic: <strong>{{ $printClinic }}</strong> &nbsp;&nbsp;|&nbsp;&nbsp;
+            Doctor: <strong>{{ $printDoctor }}</strong>
+        </div>
+        <div style="font-size:11px;color:#888;">Printed on: {{ now()->format('d M Y, h:i A') }}</div>
+        <hr style="margin:10px 0 16px;">
+    </div>
+
+    {{-- Page header (screen only) --}}
+    <div class="row pt-3 mx-1 align-items-center no-print">
         <div class="col-12 d-flex align-items-center gap-3">
             <a href="{{ route('reports.index') }}" class="btn btn-sm btn-outline-secondary"><i class="bi bi-arrow-left"></i></a>
             <h4 class="fw-bold mb-0"><i class="bi bi-bag-check me-2" style="color:#B1083C"></i>Products Sold Report</h4>
@@ -10,8 +43,8 @@
         <hr class="my-3">
     </div>
 
-    {{-- Filter Bar --}}
-    <div class="row mx-1 mb-4 g-2 align-items-end">
+    {{-- Filter Bar (screen only) --}}
+    <div class="row mx-1 mb-4 g-2 align-items-end no-print">
         <div class="col-auto">
             <label class="form-label small text-muted mb-1">Year</label>
             <select id="filterYear" class="form-select form-select-sm border-secondary" style="width:110px">
@@ -52,6 +85,11 @@
         <div class="col-auto">
             <button id="applyFilter" class="btn btn-sm btn-danger">
                 <i class="bi bi-funnel me-1"></i>Apply
+            </button>
+        </div>
+        <div class="col-auto">
+            <button onclick="printReport()" class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-printer me-1"></i>Print
             </button>
         </div>
     </div>
@@ -171,6 +209,60 @@
 
 @section('script')
 @include('admin.reports._styles')
+<style>
+/* ── Print styles ───────────────────────────────────────────── */
+.print-header-only { display: none; }
+
+@media print {
+    /* Hide all chrome */
+    .no-print,
+    .sidebar,
+    .main-sidebar,
+    nav.main-header,
+    .navbar,
+    .main-header,
+    footer,
+    .content-header,
+    .breadcrumb-wrapper { display: none !important; }
+
+    /* Expand content to full width */
+    body, html { overflow: visible !important; }
+    .content-wrapper {
+        margin-left: 0 !important;
+        margin-top: 0 !important;
+        width: 100% !important;
+        padding: 0 !important;
+    }
+    .wrapper { overflow: visible !important; }
+
+    /* Show print header */
+    .print-header-only { display: block !important; }
+
+    /* Stat cards: inline layout */
+    .rpt-stat-card {
+        box-shadow: none !important;
+        border: 1px solid #ddd;
+        break-inside: avoid;
+    }
+
+    /* Chart: fixed height so it's readable */
+    #productChart {
+        max-height: 320px !important;
+        height: 320px !important;
+    }
+
+    /* Table: keep borders, avoid row splitting */
+    .rpt-table thead th {
+        background: #B1083C !important;
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        color: #fff !important;
+    }
+    .rpt-table tr { break-inside: avoid; }
+    .rpt-panel { box-shadow: none !important; border: 1px solid #e5e5e5; }
+    .container-fluid { padding: 0 !important; }
+}
+</style>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
 const topSold    = @json($sold->take(10));
@@ -205,5 +297,9 @@ document.getElementById('applyFilter').addEventListener('click', function () {
     if (d) url += '&doctor_id=' + d;
     window.location.href = url;
 });
+
+function printReport() {
+    window.print();
+}
 </script>
 @endsection
